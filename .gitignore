@@ -2,4 +2,4 @@ backup
 fastq
 fastq_full
 __pycache__
-
+.snakemake
