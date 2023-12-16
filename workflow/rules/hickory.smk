@@ -1,6 +1,6 @@
 from pathlib import Path
 import itertools as it
-from experiment import Experiment
+import Experiment
 
 #***********************************
 # Customization section
@@ -44,12 +44,16 @@ SCRIPTS = {
 #***********************************
 # Do not alter below unless you know what you're doing, this defines the file structure for the inputs and outputs
 # Nothing below this point should need customization.
+
+base_dir = Path("../../")
+results_dir = base_dir / "results"
+
 DIR = {
-    "fastq": Path("fastq"),
-    "reports": Path("{experiment}") / "{replicate}" / "reports",
-    "sambam": Path("{experiment}") / "{replicate}" / "sambam",
-    "replicate_pairs": Path("{experiment}") / "{replicate}" / "pairs",
-    "replicate_matrix": Path("{experiment}") / "{replicate}" / "matrix",
+    "fastq": base_dir / "fastq",
+    "reports": results_dir / "{experiment}" / "{replicate}" / "reports",
+    "sambam": results_dir / "{experiment}" / "{replicate}" / "sambam",
+    "replicate_pairs": results_dir / "{experiment}" / "{replicate}" / "pairs",
+    "replicate_matrix": results_dir / "{experiment}" / "{replicate}" / "matrix",
     "experiment_pairs": Path("{experiment}") / "merge" / "pairs",
     "experiment_matrix": Path("{experiment}") / "merge" / "matrix"
 }
@@ -60,7 +64,7 @@ FILES = {
     "name_sort":                [DIR["sambam"] / "{replicate}.name_sort.bam"],
     "pairtools_parse":          [DIR["replicate_pairs"] / "{replicate}.pairs"],
     "pairtools_parse_stats":    [DIR["replicate_pairs"] / "{replicate}_pairtools_parse_stats.txt"],
-    "pairtools_replicate":         [DIR["replicate_pairs"] / "{replicate}_ds{downreplicate}.pairs"],
+    "pairtools_replicate":      [DIR["replicate_pairs"] / "{replicate}_ds{downreplicate}.pairs"],
     "pairtools_sort":           [DIR["replicate_pairs"] / "{replicate}_ds{downreplicate}_sort.pairs"],
     "pairtools_deduplicate":    [DIR["replicate_pairs"] / "{replicate}_ds{downreplicate}_sort_deduplicate.pairs"],
     "pairtools_select":         [DIR["replicate_pairs"] / "{replicate}_ds{downreplicate}_sort_deduplicate_select.pairs"],
