@@ -3,3 +3,5 @@ fastq
 fastq_full
 __pycache__
 .snakemake
+EXP1M_KO
+EXP1M_Mock

@@ -1,5 +1,4 @@
 from pathlib import Path
-import json, copy, subprocess
 import itertools as it
 from experiment import Experiment
 
@@ -82,12 +81,12 @@ wildcard_constraints:
     downreplicate = '|'.join([str(ds) for ds in PARAMETERS["downreplicate"]])
 
 def AllPaths():
-    generic_paths = it.chain.from_iterable(FILES.values())
-    unique_generic_paths = set(generic_paths)
+    template_paths = it.chain.from_iterable(FILES.values())
+    unique_template_paths = set(template_paths)
     
     downreplicate = PARAMETERS["downreplicate"]
 
-    formatted_paths = EXPERIMENTS.FormatGeneric(unique_generic_paths, downreplicate = downreplicate)
+    formatted_paths = EXPERIMENTS.FormatTemplate(unique_template_paths, downreplicate = downreplicate)
     
     all_paths = [filename for filename, _, _ in formatted_paths]
     return all_paths
@@ -112,14 +111,13 @@ rule align:
 
         shell(f"bwa mem {params_4DN} -t {threads} {genome} {r1} {r2} | {convert_to_bam} -o {output}")
 
-
 rule name_sort:
     input:
         rules.align.output
     output:
         FILES["name_sort"]
     run:
-        shell(f"samtools sort -n -o --deliberateerror eroijog {output} {input}")
+        shell(f"samtools sort -n -o {output} {input}")
 
 def read_pairtools_stats(filename, query_name):
     all_lines = open(filename).readlines()
@@ -159,14 +157,14 @@ rule pairtools_parse:
 # To refactor - this is ugly
 rule wait_for_output:
     input:
-        [filename for filename, _, _ in EXPERIMENTS.FormatGeneric(FILES["pairtools_parse"][0])]
+        [filename for filename, _, _ in EXPERIMENTS.FormatTemplate(FILES["pairtools_parse"][0])]
     output:
         marker = "all_replicates_pairtools_parsed"
     run:
         shell(f"touch {output.marker}")
 
 def compute_replicate_total_mapped():
-    pairtools_parse_stats = EXPERIMENTS.FormatGeneric(FILES["pairtools_parse_stats"][0])
+    pairtools_parse_stats = EXPERIMENTS.FormatTemplate(FILES["pairtools_parse_stats"][0])
     PARAMETERS.setdefault("replicate_total_mapped", {})
 
     for filename, replicate, experiment in pairtools_parse_stats:
@@ -191,8 +189,8 @@ rule pairtools_replicate:
     run:
         compute_replicate_total_mapped()
 
-        pairtools_parse_generic = FILES["pairtools_parse"][0]
-        input_filename, _, _ = next(EXPERIMENTS.FormatGeneric(pairtools_parse_generic, **wildcards))
+        pairtools_parse_template = FILES["pairtools_parse"][0]
+        input_filename, _, _ = next(EXPERIMENTS.FormatTemplate(pairtools_parse_template, **wildcards))
 
         downreplicate = wildcards.downreplicate if wildcards.downreplicate != "min" else min_downreplicate(wildcards)
         
@@ -259,11 +257,11 @@ rule mcool:
         shell(f"hic2cool convert {input} {output} -p 24")
 
 def pairtools_select_to_merge(wildcards):
-    generic_filename = FILES["pairtools_select"]
+    template_filename = FILES["pairtools_select"]
     experiment = wildcards.experiment
     downreplicate = wildcards.downreplicate
     
-    formatted = EXPERIMENTS.FormatGeneric(generic_filename, experiment = experiment, downreplicate = downreplicate)
+    formatted = EXPERIMENTS.FormatTemplate(template_filename, experiment = experiment, downreplicate = downreplicate)
 
     return [filename for filename, _, _ in formatted]
 

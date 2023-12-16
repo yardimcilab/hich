@@ -167,7 +167,7 @@ class Experiment(dict):
             singleton_kwarg_rule on kwarg values to decide if values are singletons or collections of singletons for purposes of forming combinations.
         """
         # If a bare string is submitted, put it in a list for iterating in the main loop
-        if type(templates) == str:
+        if type(templates) not in [list, set]:
             templates = [templates]
 
         for template in templates:
