@@ -1,6 +1,6 @@
 from pathlib import Path
 import itertools as it
-import Experiment
+from experiment import Experiment
 
 #***********************************
 # Customization section
@@ -101,11 +101,9 @@ rule all:
 
 rule align:
     input:
-        FILES["fastq"]
+        "../../"
     output:
         FILES["align"]
-    log:
-        "log/align/align{experiment}_{replicate}.log"
     run:
         genome = REFERENCES["genome"]
         r1, r2 = input
