@@ -9,7 +9,7 @@ rule align_hic:
     output:
         "results/{experiment}/sambam/{replicate}.bam"
     shell:
-        """bwa mem -SP5M -t 24 {params.ref} {input.r1} {input.r2} | samtools view -b -o {output}"""
+        """bwa mem -SP5M -t 24 {params.ref:q} {input.r1:q} {input.r2:q} | samtools view -b -o {output:q}"""
 
 rule name_sort:
     input:
@@ -17,7 +17,7 @@ rule name_sort:
     output:
         "results/{experiment}/sambam/{replicate}.name_sort.bam"
     shell:
-        """samtools sort -n -o {output} {input}"""
+        """samtools sort -n -o {output:q} {input:q}"""
 
 rule pairtools_parse:
     params:
@@ -32,10 +32,10 @@ rule pairtools_parse:
     
     shell:
         """
-        pairtools parse {input} \
-            -o {output.pairtools_parse} \
-            --output-stats {output.pairtools_parse_stats} \
-            -c {params.chromsizes} \
+        pairtools parse {input:q} \
+            -o {output.pairtools_parse:q} \
+            --output-stats {output.pairtools_parse_stats:q} \
+            -c {params.chromsizes:q} \
             --assembly {params.assembly} \
             --min-mapq {params.min_mapq} \
             --nproc-in 24 \
@@ -48,7 +48,7 @@ rule wait_parse_all:
     output:
         "wait_parse_all"
     shell:
-        """touch {output}"""
+        """touch {output:q}"""
 
 rule pairtools_downsample:
     input:
@@ -62,7 +62,7 @@ rule pairtools_downsample:
             total_mapped = compute_replicate_total_mapped("results/{experiment}/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt")
             downsample = min_downsample(total_mapped, wildcards)
 
-        shell(f"""pairtools sample --output {output} --seed 0 {downsample} {input.parse}""")
+        shell(f"""pairtools sample --output \"{output}\" --seed 0 {downsample} \"{input.parse}\"""")
 
 rule pairtools_sort:
     input:
@@ -70,7 +70,7 @@ rule pairtools_sort:
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
     shell:
-        """pairtools sort -o {output} {input}"""
+        """pairtools sort -o {output:q} {input:q}"""
 
 rule pairtools_deduplicate:
     input:
@@ -78,7 +78,7 @@ rule pairtools_deduplicate:
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs"
     shell:
-        """pairtools dedup --mark-dups -o {output} {input}"""
+        """pairtools dedup --mark-dups -o {output:q} {input:q}"""
 
 rule pairtools_select:
     input:
@@ -86,7 +86,7 @@ rule pairtools_select:
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
     shell:
-        """pairtools select '(pair_type=="UU") or (pair_type=="RU") or (pair_type=="UR")' -o {output} {input}"""
+        """pairtools select '(pair_type=="UU") or (pair_type=="RU") or (pair_type=="UR")' -o {output:q} {input:q}"""
 
 rule hic:
     params:
@@ -98,7 +98,7 @@ rule hic:
     output:
         "results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.hic"
     shell:
-        """java -Xmx20g -jar {params.juicer_tools_jar} pre -r {params.resolutions} {input} {output} {params.assembly}"""
+        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre -r {params.resolutions:q} {input:q} {output:q} {params.assembly}"""
 
 rule mcool:
     input:
@@ -106,4 +106,4 @@ rule mcool:
     output:
         "results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool"
     shell:
-        """hic2cool convert {input} {output} -p 24"""
+        """hic2cool convert {input:q} {output:q} -p 24"""

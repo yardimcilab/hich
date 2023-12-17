@@ -3,7 +3,7 @@ configfile: "workflow/config/config.yaml"
 
 include: "rules/common.smk"
 include: "rules/setup.smk"
-include: "rules/align_hic.smk"
+include: "rules/hic.smk"
 
 rule all:
     params:
