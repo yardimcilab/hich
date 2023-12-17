@@ -1,7 +1,12 @@
-configfile: "config/config.yaml"
+configfile: "workflow/config/config.yaml"
+
+
 include: "rules/common.smk"
-include: "rules/align.smk"
+include: "rules/setup.smk"
+include: "rules/align_hic.smk"
 
 rule all:
+    params:
+
     input:
-        [result[0] for result in EXPERIMENTS.FormatTemplate("results/{experiment}/sambam/{replicate}.bam")]
+        [result[0] for result in EXPERIMENTS.FormatTemplate("results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool", downsample = config['downsample'])]

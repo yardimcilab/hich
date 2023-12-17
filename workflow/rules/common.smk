@@ -177,6 +177,7 @@ class Experiment(dict):
             singleton_kwarg_rule on kwarg values to decide if values are singletons or collections of singletons for purposes of forming combinations.
         """
         # If a bare string is submitted, put it in a list for iterating in the main loop
+        
         if type(templates) not in [list, set]:
             templates = [templates]
 
@@ -211,9 +212,44 @@ class Experiment(dict):
 
 EXPERIMENTS = Experiment(kv_reverse(config['experiment_structure']))
 
+
 wildcard_constraints:
     replicate = '|'.join(EXPERIMENTS.Replicates()),
-    experiment = '|'.join(EXPERIMENTS.Experiments())
+    experiment = '|'.join(EXPERIMENTS.Experiments()),
+    downsample = '|'.join([str(ds) for ds in config['downsample']])
+
+def read_pairtools_stats(filename, query_name):
+    all_lines = open(filename).readlines()
+
+    for line in all_lines:
+        split = line.split()
+
+        if len(split) < 2:
+            continue
+        
+        line_name = split[0].strip()
+        line_stat = split[1].strip()
+
+        if query_name == line_name:
+            return line_stat
+
+def compute_replicate_total_mapped(statsfile):
+    pairtools_parse_stats = EXPERIMENTS.FormatTemplate(statsfile)
+    total_mapped = {}
+
+    for filename, replicate, experiment in pairtools_parse_stats:
+        total_mapped[replicate] = int(read_pairtools_stats(filename, "total_mapped"))
+
+    return total_mapped
+
+def min_downreplicate(total_mapped, wildcards):
+    all_total_mapped = total_mapped.values()
+    min_total_mapped = min(all_total_mapped)
+
+    replicate = wildcards.replicate
+    replicate_total_mapped = total_mapped[replicate]
+    
+    return min_total_mapped / replicate_total_mapped
 
 """
 exp = Experiment({"E1S1":"E1", "E1S2":"E1", "E2S1":"E2", "E2S2":"E2"})
