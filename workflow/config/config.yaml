@@ -8,7 +8,6 @@ experiment_structure:
     - 1M_Mock_2
     - 1M_Mock_3
 
-
 assembly: "hg38"
 
 assembly_urls:

@@ -1,3 +1,31 @@
+12/17/2023
+Ben Skubi, skubi@ohsu.edu
+Labs of Gurkan Yardimci and Andrew Adey, OHSU
+
+Snakemake workflow for processing from raw .fastq to per-replicate and merged per-experiment .hic and .mcool with several normalization options (VC, VC_SQRT, KR, SCALE).
+
+workflow/config/config.yaml: config file for specifying experiment structure and processing parameters
+    experiment_structure: associate experiments with biological replicates to control merging
+    assembly: hg38 or other reference genome name
+    assembly_urls: permits downloading and indexing no alts reference genome automatically 
+    chromsizes: path to no alts chromsizes file
+    juicer_tools_jar: path to juicer tools jar
+    min_mapq: minimum bwa mem mapq filter
+    downsample: fraction of .pairs entries to downsample to. 0-1 or min; min results in downsampling to the size of the smallest .pairs replicate
+    resolutions: resolutions/bin sizes to produce in the .hic and .mcool outputs
+
+workflow/rules: individual modules containing 1+ snakemake rules; common.smk instead contains common Python functions used by other rules
+    setup.smk: downloads resource files
+    hic: processes from raw .fastq to .hic and .mcool file formats
+    common.smk: contains Python functions and classes used in snakemake rules
+
+resources: reference genomes, chromsizes files, etc
+
+results: output location for intermediate and final files
+    final outputs per replicate are in results/{experiment}/{replicate}/matrix
+
+
+
 12/14/2023
 Ben Skubi, skubi@ohsu.edu
 Labs of Gurkan Yardimci and Andrew Adey, OHSU
