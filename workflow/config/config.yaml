@@ -1,0 +1,16 @@
+experiment_structure:
+  EXP1M_KO:
+    - 1M_KO_1
+    - 1M_KO_2
+    - 1M_KO_3
+  EXP1M_Mock:
+    - 1M_Mock_1
+    - 1M_Mock_2
+    - 1M_Mock_3
+
+assay_information:
+  cell_type: "unknown"
+
+analysis:
+  reference: "hg38"
+  alts: False

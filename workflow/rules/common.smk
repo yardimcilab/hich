@@ -12,6 +12,15 @@ Functions:
 
 import itertools as it
 from pathlib import Path, PosixPath
+import yaml
+
+def kv_reverse(dictionary):
+    """Given a dictionary with iterable values, set value elements as keys and associated key as value"""
+    reversed = {}
+    for key, value in dictionary.items():
+        for val in value:
+            reversed[val] = key
+    return reversed
 
 def generate_kwarg_combinations(multi_kwargs, singleton_kwarg_rule = lambda x: x):
     """Given a dict with 1+ possible kwarg values, return a list of dicts containing all combinations of those values.
@@ -80,6 +89,7 @@ class Experiment(dict):
     def __init__(self, experiment_structure):
         """Set up the replicate-experiment associtions (experiment_structure contains replicate names as keys, experiment names as values)"""
         super().__init__(experiment_structure)
+        self.AssertNameConvention()
 
     def AssertNameConvention(self):
         """Check that every experiment name and its associated replicate names have a uniquely identifying, case-insensitive substring in common.
@@ -198,6 +208,12 @@ class Experiment(dict):
                 else:
                     formatted_string = template_string.format(**base_kwargs)
                     yield (formatted_string, replicate, experiment)
+
+EXPERIMENTS = Experiment(kv_reverse(config['experiment_structure']))
+
+wildcard_constraints:
+    replicate = '|'.join(EXPERIMENTS.Replicates()),
+    experiment = '|'.join(EXPERIMENTS.Experiments())
 
 """
 exp = Experiment({"E1S1":"E1", "E1S2":"E1", "E2S1":"E2", "E2S2":"E2"})

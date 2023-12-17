@@ -5,3 +5,5 @@ __pycache__
 .snakemake
 EXP1M_KO
 EXP1M_Mock
+results/*
+!results/.gitkeep
