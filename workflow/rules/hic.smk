@@ -2,7 +2,7 @@ include: "setup.smk"
 
 rule align_hic:
     params:
-        ref = lambda _: config['assembly']
+        ref = config['assembly']
     input:
         r1 = "fastq/{replicate}_1.fq.gz",
         r2 = "fastq/{replicate}_2.fq.gz"
@@ -21,9 +21,9 @@ rule name_sort:
 
 rule pairtools_parse:
     params:
-        assembly = lambda _: config['assembly'],
-        min_mapq = lambda _: config['min_mapq'],
-        chromsizes = lambda _: config['chromsizes']
+        assembly = config['assembly'],
+        min_mapq = config['min_mapq'],
+        chromsizes = config['chromsizes']
     input:
         name_sort = "results/{experiment}/sambam/{replicate}.name_sort.bam"
     output:
@@ -90,9 +90,9 @@ rule pairtools_select:
 
 rule hic:
     params:
-        resolutions = lambda _: config['resolutions'],
-        assembly = lambda _: config['assembly'],
-        juicer_tools_jar = lambda _: config['juicer_tools_jar']
+        resolutions = config['resolutions'],
+        assembly = config['assembly'],
+        juicer_tools_jar = config['juicer_tools_jar']
     input:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
     output:
@@ -128,9 +128,9 @@ rule pairtools_sort_merge:
 
 rule hic_merge:
     params:
-        resolutions = lambda _: config['resolutions'],
-        assembly = lambda _: config['assembly'],
-        juicer_tools_jar = lambda _: config['juicer_tools_jar']
+        resolutions = config['resolutions'],
+        assembly = config['assembly'],
+        juicer_tools_jar = config['juicer_tools_jar']
     input:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
     output:
