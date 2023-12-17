@@ -1,13 +1,15 @@
 include: "setup.smk"
 
 rule align_hic:
-    params:
-        ref = config['assembly']
     input:
         r1 = "fastq/{replicate}_1.fq.gz",
         r2 = "fastq/{replicate}_2.fq.gz"
     output:
         "results/{experiment}/sambam/{replicate}.bam"
+    params:
+        ref = config['assembly']
+    conda:
+        "envs/bwa_samtools.yaml"
     shell:
         """bwa mem -SP5M -t 24 {params.ref:q} {input.r1:q} {input.r2:q} | samtools view -b -o {output:q}"""
 
@@ -16,20 +18,23 @@ rule name_sort:
         "results/{experiment}/sambam/{replicate}.bam"
     output:
         "results/{experiment}/sambam/{replicate}.name_sort.bam"
+    conda:
+        "envs/bwa_samtools.yaml"
     shell:
         """samtools sort -n -o {output:q} {input:q}"""
 
 rule pairtools_parse:
-    params:
-        assembly = config['assembly'],
-        min_mapq = config['min_mapq'],
-        chromsizes = config['chromsizes']
     input:
         name_sort = "results/{experiment}/sambam/{replicate}.name_sort.bam"
     output:
         pairtools_parse = "results/{experiment}/{replicate}/pairs/{replicate}.pairs",
         pairtools_parse_stats = "results/{experiment}/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt"
-    
+    params:
+        assembly = config['assembly'],
+        min_mapq = config['min_mapq'],
+        chromsizes = config['chromsizes']
+    conda:
+        "envs/pairtools.yaml"    
     shell:
         """
         pairtools parse {input:q} \
@@ -69,6 +74,8 @@ rule pairtools_sort:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}.pairs"
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
+    conda:
+        "envs/pairtools.yaml"
     shell:
         """pairtools sort -o {output:q} {input:q}"""
 
@@ -77,6 +84,8 @@ rule pairtools_deduplicate:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs"
+    conda:
+        "envs/pairtools.yaml"
     shell:
         """pairtools dedup --mark-dups -o {output:q} {input:q}"""
 
@@ -85,6 +94,8 @@ rule pairtools_select:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs"
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
+    conda:
+        "envs/pairtools.yaml"
     shell:
         """pairtools select '(pair_type=="UU") or (pair_type=="RU") or (pair_type=="UR")' -o {output:q} {input:q}"""
 
@@ -97,6 +108,8 @@ rule hic:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
     output:
         "results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.hic"
+    conda:
+        "envs/juicer_tools.yaml"
     shell:
         """java -Xmx20g -jar {params.juicer_tools_jar:q} pre -r {params.resolutions:q} {input:q} {output:q} {params.assembly}"""
 
@@ -105,6 +118,8 @@ rule mcool:
         "results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.hic"
     output:
         "results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool"
+    conda:
+        "envs/hic2cool.yaml"
     shell:
         """hic2cool convert {input:q} {output:q} -p 24"""
 
@@ -115,6 +130,8 @@ rule pairtools_merge:
             downsample = wildcards.downsample)]
     output:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
+    conda:
+        "envs/pairtools.yaml"
     shell:
         """pairtools merge -o {output:q} {input:q}"""
 
@@ -123,6 +140,8 @@ rule pairtools_sort_merge:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
     output:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
+    conda:
+        "envs/pairtools.yaml"
     shell:
         """pairtools sort -o {output:q} {input:q}"""
 
@@ -135,6 +154,8 @@ rule hic_merge:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
     output:
         "results/{experiment}/matrix/{experiment}_ds{downsample}.hic"
+    conda:
+        "envs/juicer_tools.yaml"
     shell:
         """java -Xmx20g -jar {params.juicer_tools_jar:q} pre -r {params.resolutions:q} {input:q} {output:q} {params.assembly}"""
 
@@ -143,5 +164,7 @@ rule mcool_merge:
         "results/{experiment}/matrix/{experiment}_ds{downsample}.hic"
     output:
         "results/{experiment}/matrix/{experiment}_ds{downsample}.mcool"
+    conda:
+        "envs/hic2cool.yaml"
     shell:
         """hic2cool convert {input:q} {output:q} -p 24"""
