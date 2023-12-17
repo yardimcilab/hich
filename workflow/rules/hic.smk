@@ -107,3 +107,41 @@ rule mcool:
         "results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool"
     shell:
         """hic2cool convert {input:q} {output:q} -p 24"""
+
+rule pairtools_merge:
+    input:
+        lambda wildcards: [filename for filename, _, _ in EXPERIMENTS.FormatTemplate \
+            ("results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs", \
+            downsample = wildcards.downsample)]
+    output:
+        "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
+    shell:
+        """pairtools merge -o {output:q} {input:q}"""
+
+rule pairtools_sort_merge:
+    input:
+        "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
+    output:
+        "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
+    shell:
+        """pairtools sort -o {output:q} {input:q}"""
+
+rule hic_merge:
+    params:
+        resolutions = lambda _: config['resolutions'],
+        assembly = lambda _: config['assembly'],
+        juicer_tools_jar = lambda _: config['juicer_tools_jar']
+    input:
+        "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
+    output:
+        "results/{experiment}/matrix/{experiment}_ds{downsample}.hic"
+    shell:
+        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre -r {params.resolutions:q} {input:q} {output:q} {params.assembly}"""
+
+rule mcool_merge:
+    input:
+        "results/{experiment}/matrix/{experiment}_ds{downsample}.hic"
+    output:
+        "results/{experiment}/matrix/{experiment}_ds{downsample}.mcool"
+    shell:
+        """hic2cool convert {input:q} {output:q} -p 24"""
