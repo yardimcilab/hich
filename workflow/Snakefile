@@ -9,4 +9,7 @@ rule all:
     params:
 
     input:
-        [result[0] for result in EXPERIMENTS.FormatTemplate("results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool", downsample = config['downsample'])]
+        [result[0] for result in EXPERIMENTS.FormatTemplate("results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool", \
+            downsample = config['downsample'])] +
+        [result[0] for result in EXPERIMENTS.FormatTemplate("results/{experiment}/matrix/{experiment}_ds{downsample}.mcool", \
+            downsample = config['downsample'])]
