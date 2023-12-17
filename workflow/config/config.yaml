@@ -6,12 +6,21 @@ experiment_structure:
   EXP1M_Mock:
     - 1M_Mock_1
     - 1M_Mock_2
-    - 1M_Mock_3
+    - 3M_Mock_3
 
-assembly: "hg38"
-genome: "resources/hg38_noalts.fa"
+email_address: "skubi@ohsu.edu"
+email_subject_error: "[Snakemake Alert] Failure"
+email_body_error: "An error occurred in the EZH2 Knockout 1M-read test pipeline."
+email_subject_success: "[Snakemake Alert] Success"
+email_body_success: "The EZH2 Knockout 1M-read test pipeline has completed successfully."
+
+assembly_header: "hg38"
+genomeID: "hg38"
+genome_prefix: "resources/hg38_noalts"
 assembly_urls:
   hg38: "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz"
+
+juicer_tools_pre_restriction_site_file: "resources/hg38_Arima.txt"
 
 chromsizes: "/home/groups/ravnica/projects/sciMET_GCC/230410_replication/ref/hg38.noalt.sizes"
 
@@ -27,11 +36,12 @@ resolutions:
   - 2000
   - 5000
   - 10000
-  - 20000
+  - 25000
   - 50000
   - 100000
-  - 200000
+  - 250000
   - 500000
   - 1000000
-  - 2000000
+  - 2500000
   - 5000000
+  - 10000000

@@ -7,11 +7,11 @@ rule align:
     output:
         "results/{experiment}/sambam/{replicate}.bam"
     params:
-        ref = config['genome']
+        genome_prefix = config['genome_prefix']
     conda:
-        "workflow/envs/bwa_samtools.yaml"
+        "../envs/bwa_samtools.yaml"
     shell:
-        """bwa mem -SP5M -t 24 {params.ref:q} {input.r1:q} {input.r2:q} | samtools view -b -o {output:q}"""
+        """bwa mem -SP5M -t 24 -P {params.genome_prefix:q} {input.r1:q} {input.r2:q} | samtools view -b -o {output:q}"""
 
 rule name_sort:
     input:
@@ -19,7 +19,7 @@ rule name_sort:
     output:
         "results/{experiment}/sambam/{replicate}.name_sort.bam"
     conda:
-        "envs/bwa_samtools.yaml"
+        "../envs/bwa_samtools.yaml"
     shell:
         """samtools sort -n -o {output:q} {input:q}"""
 
@@ -30,18 +30,18 @@ rule pairtools_parse:
         pairtools_parse = "results/{experiment}/{replicate}/pairs/{replicate}.pairs",
         pairtools_parse_stats = "results/{experiment}/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt"
     params:
-        assembly = config['assembly'],
+        assembly_header = config['assembly_header'],
         min_mapq = config['min_mapq'],
         chromsizes = config['chromsizes']
     conda:
-        "envs/pairtools.yaml"    
+        "../envs/pairtools.yaml"    
     shell:
         """
         pairtools parse {input:q} \
             -o {output.pairtools_parse:q} \
             --output-stats {output.pairtools_parse_stats:q} \
             -c {params.chromsizes:q} \
-            --assembly {params.assembly} \
+            --assembly {params.assembly_header} \
             --min-mapq {params.min_mapq} \
             --nproc-in 24 \
             --nproc-out 24
@@ -75,7 +75,7 @@ rule pairtools_sort:
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
     conda:
-        "envs/pairtools.yaml"
+        "../envs/pairtools.yaml"
     shell:
         """pairtools sort -o {output:q} {input:q}"""
 
@@ -85,7 +85,7 @@ rule pairtools_deduplicate:
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs"
     conda:
-        "envs/pairtools.yaml"
+        "../envs/pairtools.yaml"
     shell:
         """pairtools dedup --mark-dups -o {output:q} {input:q}"""
 
@@ -95,23 +95,30 @@ rule pairtools_select:
     output:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
     conda:
-        "envs/pairtools.yaml"
+        "../envs/pairtools.yaml"
     shell:
         """pairtools select '(pair_type=="UU") or (pair_type=="RU") or (pair_type=="UR")' -o {output:q} {input:q}"""
 
 rule hic:
     params:
-        resolutions = config['resolutions'],
-        assembly = config['assembly'],
-        juicer_tools_jar = config['juicer_tools_jar']
+        resolutions = ','.join([str(resolution) for resolution in config['resolutions']]),
+        genomeID = config['genomeID'],
+        juicer_tools_jar = config['juicer_tools_jar'],
+        min_mapq = config['min_mapq'],
+        restriction_sites = config['juicer_tools_pre_restriction_site_file']
     input:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
     output:
         "results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.hic"
     conda:
-        "envs/juicer_tools.yaml"
+        "../envs/juicer_tools.yaml"
     shell:
-        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre -r {params.resolutions:q} {input:q} {output:q} {params.assembly}"""
+        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre    -q {params.min_mapq} \
+                                                                -f {params.restriction_sites} \
+                                                                -r {params.resolutions:q} \
+                                                                {input:q} \
+                                                                {output:q} \
+                                                                {params.genomeID}"""
 
 rule mcool:
     input:
@@ -119,7 +126,7 @@ rule mcool:
     output:
         "results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool"
     conda:
-        "envs/hic2cool.yaml"
+        "../envs/hic2cool.yaml"
     shell:
         """hic2cool convert {input:q} {output:q} -p 24"""
 
@@ -131,7 +138,7 @@ rule pairtools_merge:
     output:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
     conda:
-        "envs/pairtools.yaml"
+        "../envs/pairtools.yaml"
     shell:
         """pairtools merge -o {output:q} {input:q}"""
 
@@ -141,23 +148,30 @@ rule pairtools_sort_merge:
     output:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
     conda:
-        "envs/pairtools.yaml"
+        "../envs/pairtools.yaml"
     shell:
         """pairtools sort -o {output:q} {input:q}"""
 
 rule hic_merge:
     params:
-        resolutions = config['resolutions'],
-        assembly = config['assembly'],
-        juicer_tools_jar = config['juicer_tools_jar']
+        resolutions = ','.join([str(resolution) for resolution in config['resolutions']]),
+        genomeID = config['genomeID'],
+        juicer_tools_jar = config['juicer_tools_jar'],
+        min_mapq = config['min_mapq'],
+        restriction_sites = config['juicer_tools_pre_restriction_site_file']
     input:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
     output:
         "results/{experiment}/matrix/{experiment}_ds{downsample}.hic"
     conda:
-        "envs/juicer_tools.yaml"
+        "../envs/juicer_tools.yaml"
     shell:
-        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre -r {params.resolutions:q} {input:q} {output:q} {params.assembly}"""
+        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre    -q {params.min_mapq} \
+                                                                -f {params.restriction_sites} \
+                                                                -r {params.resolutions:q} \
+                                                                {input:q} \
+                                                                {output:q} \
+                                                                {params.genomeID}"""
 
 rule mcool_merge:
     input:
@@ -165,6 +179,6 @@ rule mcool_merge:
     output:
         "results/{experiment}/matrix/{experiment}_ds{downsample}.mcool"
     conda:
-        "envs/hic2cool.yaml"
+        "../envs/hic2cool.yaml"
     shell:
         """hic2cool convert {input:q} {output:q} -p 24"""

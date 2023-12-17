@@ -242,7 +242,7 @@ def compute_replicate_total_mapped(statsfile):
 
     return total_mapped
 
-def min_downreplicate(total_mapped, wildcards):
+def min_downsample(total_mapped, wildcards):
     all_total_mapped = total_mapped.values()
     min_total_mapped = min(all_total_mapped)
 
