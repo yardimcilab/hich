@@ -1,15 +1,15 @@
 include: "setup.smk"
 
-rule align_hic:
+rule align:
     input:
         r1 = "fastq/{replicate}_1.fq.gz",
         r2 = "fastq/{replicate}_2.fq.gz"
     output:
         "results/{experiment}/sambam/{replicate}.bam"
     params:
-        ref = config['assembly']
+        ref = config['genome']
     conda:
-        "envs/bwa_samtools.yaml"
+        "workflow/envs/bwa_samtools.yaml"
     shell:
         """bwa mem -SP5M -t 24 {params.ref:q} {input.r1:q} {input.r2:q} | samtools view -b -o {output:q}"""
 

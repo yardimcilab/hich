@@ -1,8 +1,8 @@
 rule download_index_reference:
-    output:
-        "resources/{0}_no_alts.fa".format(config['assembly'])
     params:
         url = config['assembly_urls'][config['assembly']]
+    output:
+        config['genome']
     shell:
         """
         if [ ! -f {output} ]; then
