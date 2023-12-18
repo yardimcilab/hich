@@ -1,5 +1,6 @@
 backup
 fastq
+fastq_small
 fastq_full
 __pycache__
 .snakemake
