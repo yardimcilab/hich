@@ -5,7 +5,7 @@ rule align:
         r1 = "fastq/{replicate}_1.fq.gz",
         r2 = "fastq/{replicate}_2.fq.gz"
     output:
-        "results/{experiment}/sambam/{replicate}.bam"
+        "results/{experiment}/{replicate}/sambam/{replicate}.bam"
     params:
         genome_prefix = config['genome_prefix']
     conda:
@@ -15,9 +15,9 @@ rule align:
 
 rule name_sort:
     input:
-        "results/{experiment}/sambam/{replicate}.bam"
+        "results/{experiment}/{replicate}/sambam/{replicate}.bam"
     output:
-        "results/{experiment}/sambam/{replicate}.name_sort.bam"
+        "results/{experiment}/{replicate}/sambam/{replicate}.name_sort.bam"
     conda:
         "../envs/bwa_samtools.yaml"
     shell:
@@ -25,7 +25,7 @@ rule name_sort:
 
 rule pairtools_parse:
     input:
-        name_sort = "results/{experiment}/sambam/{replicate}.name_sort.bam"
+        name_sort = "results/{experiment}/{replicate}/sambam/{replicate}.name_sort.bam"
     output:
         pairtools_parse = "results/{experiment}/{replicate}/pairs/{replicate}.pairs",
         pairtools_parse_stats = "results/{experiment}/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt"

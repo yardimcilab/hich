@@ -5,14 +5,14 @@
 #         associated with their experiment prefix have a substring uniquely identifying them as a group.
 #         If that is not true, an error will be generated. This helps avoid mis-merging replicates due to typos.
 experiment_structure:
-  EXP1M_KO:
-    - 1M_KO_1
-    - 1M_KO_2
-    - 1M_KO_3
-  EXP1M_Mock:
-    - 1M_Mock_1
-    - 1M_Mock_2
-    - 3M_Mock_3
+  EXP_KO:
+    - KO_1
+    - KO_2
+    - KO_3
+  EXP_Mock:
+    - Mock_1
+    - Mock_2
+    - Mock_3
 
 # Settings for email alerts
 email_address: "skubi@ohsu.edu"
