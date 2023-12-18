@@ -6,6 +6,17 @@ include: "rules/setup.smk"
 include: "rules/hic.smk"
 include: "rules/email.smk"
 
+onstart:
+    print("Starting Snakemake")
+
+onsuccess:
+    print("Sending success notification email")
+    shell("""echo \"{config[email_body_success]}\" | mail -s \"{config[email_subject_success]}\" \"{config[email_address]}\"""")
+
+onerror:
+    print("Sending error notification email")
+    shell("""echo \"{config[email_body_error]}\" | mail -s \"{config[email_subject_error]}\" \"{config[email_address]}\"""")
+
 rule all:
     input:
         [result[0] for result in EXPERIMENTS.FormatTemplate("results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool", \

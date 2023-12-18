@@ -7,3 +7,5 @@ EXP1M_KO
 EXP1M_Mock
 results/*
 !results/.gitkeep
+resources/*
+!resources/.gitkeep

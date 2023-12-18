@@ -20,6 +20,8 @@ genome_prefix: "resources/hg38_noalts"
 assembly_urls:
   hg38: "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz"
 
+# From juicer tools pre documentation (https://github.com/aidenlab/juicer/wiki/Pre#restriction-site-file-format)
+# IMPORTANT NOTE pre throws away reads that map to the same restriction fragment.
 juicer_tools_pre_restriction_site_file: "resources/hg38_Arima.txt"
 
 chromsizes: "/home/groups/ravnica/projects/sciMET_GCC/230410_replication/ref/hg38.noalt.sizes"
@@ -45,3 +47,10 @@ resolutions:
   - 2500000
   - 5000000
   - 10000000
+
+# Options: VC, VC_SQRT, KR,SCALE, GW_KR, GW_SCALE, GW_VC, INTER_KR, INTER_SCALE, INTER_VC
+normalizations:
+  - VC
+  - VC_SQRT
+  - KR
+  - SCALE
