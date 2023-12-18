@@ -105,7 +105,8 @@ rule hic:
         genomeID = config['genomeID'],
         juicer_tools_jar = config['juicer_tools_jar'],
         min_mapq = config['min_mapq'],
-        restriction_sites = config['juicer_tools_pre_restriction_site_file']
+        restriction_sites = config['juicer_tools_pre_restriction_site_file'],
+        norms = ','.join([str(norm) for norm in config['normalizations']])
     input:
         "results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
     output:
@@ -116,6 +117,7 @@ rule hic:
         """java -Xmx20g -jar {params.juicer_tools_jar:q} pre    -q {params.min_mapq} \
                                                                 -f {params.restriction_sites} \
                                                                 -r {params.resolutions:q} \
+                                                                -k {params.norms:q} \
                                                                 {input:q} \
                                                                 {output:q} \
                                                                 {params.genomeID}"""
@@ -158,7 +160,8 @@ rule hic_merge:
         genomeID = config['genomeID'],
         juicer_tools_jar = config['juicer_tools_jar'],
         min_mapq = config['min_mapq'],
-        restriction_sites = config['juicer_tools_pre_restriction_site_file']
+        restriction_sites = config['juicer_tools_pre_restriction_site_file'],
+        norms = ','.join([str(norm) for norm in config['normalizations']])
     input:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
     output:
@@ -169,6 +172,7 @@ rule hic_merge:
         """java -Xmx20g -jar {params.juicer_tools_jar:q} pre    -q {params.min_mapq} \
                                                                 -f {params.restriction_sites} \
                                                                 -r {params.resolutions:q} \
+                                                                -k {params.norms:q} \
                                                                 {input:q} \
                                                                 {output:q} \
                                                                 {params.genomeID}"""
