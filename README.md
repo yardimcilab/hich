@@ -4,6 +4,23 @@ Labs of Gurkan Yardimci and Andrew Adey, OHSU
 
 Snakemake workflow for processing from raw .fastq to per-replicate and merged per-experiment .hic and .mcool with several normalization options (VC, VC_SQRT, KR, SCALE).
 
+Setup:
+
+1. Install Snakemake
+2. Install dependencies
+3. Reference and chromsizes
+    - A no-alts reference is essential. See Heng Li's explanation at https://lh3.github.io/2017/11/13/which-human-reference-genome-to-use
+    - The reference must be indexed (producing .amb, .ann, .bwt, .pac, .sa). This can take about 3 hours.
+    - You can either drop symlinks to your reference files in ./resources, or else set parameters to let setup.smk download and index
+    your reference genome for you.
+    
+    config.yaml parameters to set:
+        - assembly_header: genome assembly name, used with pairtools parse --assembly parameter to store pairs header name
+        - genomeID: used in juicer_tools pre to get chrom sizes. Either use one of the preset options in juicer_tools pre documentation (https://github.com/aidenlab/juicer/wiki/Pre)
+
+pre throws away reads that map to the same restriction fragment.
+
+
 workflow/config/config.yaml: config file for specifying experiment structure and processing parameters
     experiment_structure: associate experiments with biological replicates to control merging
     assembly: hg38 or other reference genome name
