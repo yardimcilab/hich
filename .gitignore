@@ -8,5 +8,7 @@ EXP1M_KO
 EXP1M_Mock
 results/*
 !results/.gitkeep
+results_full/*
+!results_full/.gitkeep
 resources/*
 !resources/.gitkeep

@@ -4,18 +4,18 @@
 #         fastq/[prefix]_1.fq.gz and fastq[prefix]_2.fq.gz. We expect that all replicate prefixes
 #         associated with their experiment prefix have a substring uniquely identifying them as a group.
 #         If that is not true, an error will be generated. This helps avoid mis-merging replicates due to typos.
-experiment_structure:
-  EXP_KO:
-    - KO_1
-    - KO_2
-    - KO_3
-  EXP_Mock:
-    - Mock_1
-    - Mock_2
-    - Mock_3
+merge_structure:
+  EXP_1K_KO:
+    - 1K_KO_1
+    - 1K_KO_2
+    - 1K_KO_3
+  EXP_1K_Mock:
+    - 1K_Mock_1
+    - 1K_Mock_2
+    - 1K_Mock_3
 
 # Settings for email alerts
-email_address: "skubi@ohsu.edu"
+email_address: ""
 email_subject_error: "[Snakemake Alert] Failure"
 email_body_error: "An error occurred in the EZH2 Knockout 1M-read test pipeline."
 email_subject_success: "[Snakemake Alert] Success"

@@ -1,14 +1,20 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, Path(workflow.basedir).parent.as_posix())
+print(sys.path)
+from scripts.rep_merge import *
+
 configfile: "workflow/config/config.yaml"
 
-
-include: "rules/common.smk"
 include: "rules/setup.smk"
-include: "rules/hic.smk"
+include: "rules/process_replicates.smk"
+include: "rules/process_merges.smk"
 include: "rules/email.smk"
 
 rule all:
     input:
-        [result[0] for result in EXPERIMENTS.FormatTemplate("results/{experiment}/{replicate}/matrix/{replicate}_ds{downsample}.mcool", \
+        [result[0] for result in MERGES.format_template("results/{merge}/{replicate}/matrix/{replicate}_ds{downsample}.mcool", \
             downsample = config['downsample'])] +
-        [result[0] for result in EXPERIMENTS.FormatTemplate("results/{experiment}/matrix/{experiment}_ds{downsample}.mcool", \
+        [result[0] for result in MERGES.format_template("results/{merge}/matrix/{merge}_ds{downsample}.mcool", \
             downsample = config['downsample'])]
