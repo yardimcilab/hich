@@ -136,7 +136,7 @@ rule pairtools_merge:
     input:
         lambda wildcards: [filename for filename, _, _ in EXPERIMENTS.FormatTemplate \
             ("results/{experiment}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs", \
-            downsample = wildcards.downsample)]
+            experiment=wildcards.experiment, downsample = wildcards.downsample)]
     output:
         "results/{experiment}/pairs/{experiment}_ds{downsample}_sort_dedup_select_merge.pairs"
     conda:
