@@ -5,7 +5,7 @@ rule align:
         r1 = "fastq/{replicate}_1.fq.gz",
         r2 = "fastq/{replicate}_2.fq.gz"
     output:
-        "results/{merge}/{replicate}/sambam/{replicate}.bam"
+        "results/{replicate}/sambam/{replicate}.bam"
     params:
         genome_prefix = config['genome_prefix']
     conda:
@@ -15,9 +15,9 @@ rule align:
 
 rule name_sort:
     input:
-        "results/{merge}/{replicate}/sambam/{replicate}.bam"
+        "results/{replicate}/sambam/{replicate}.bam"
     output:
-        "results/{merge}/{replicate}/sambam/{replicate}.name_sort.bam"
+        "results/{replicate}/sambam/{replicate}.name_sort.bam"
     conda:
         "../envs/bwa_samtools.yaml"
     shell:
@@ -25,10 +25,10 @@ rule name_sort:
 
 rule pairtools_parse:
     input:
-        name_sort = "results/{merge}/{replicate}/sambam/{replicate}.name_sort.bam"
+        name_sort = "results/{replicate}/sambam/{replicate}.name_sort.bam"
     output:
-        pairtools_parse = "results/{merge}/{replicate}/pairs/{replicate}.pairs",
-        pairtools_parse_stats = "results/{merge}/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt"
+        pairtools_parse = "results/{replicate}/pairs/{replicate}.pairs",
+        pairtools_parse_stats = "results/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt"
     params:
         assembly_header = config['assembly_header'],
         min_mapq = config['min_mapq'],
@@ -49,7 +49,7 @@ rule pairtools_parse:
 
 rule wait_parse_all:
     input:
-        [filename for filename, _, _ in MERGES.format_template("results/{merge}/{replicate}/pairs/{replicate}.pairs")]
+        [MERGES.format_template("results/{replicate}/pairs/{replicate}.pairs")]
     output:
         "wait_parse_all"
     shell:
@@ -57,14 +57,14 @@ rule wait_parse_all:
 
 rule pairtools_downsample:
     input:
-        parse = "results/{merge}/{replicate}/pairs/{replicate}.pairs",
+        parse = "results/{replicate}/pairs/{replicate}.pairs",
         marker = "wait_parse_all"
     output:
-        "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}.pairs"
+        "results/{replicate}/pairs/{replicate}_ds{downsample}.pairs"
     run:
         downsample = wildcards.downsample
         if downsample == "min":
-            total_mapped = compute_replicate_total_mapped("results/{merge}/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt", MERGES)
+            total_mapped = compute_replicate_total_mapped("results/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt", MERGES)
             downsample = min_downsample(total_mapped, wildcards)
 
         shell(f"""pairtools sample \
@@ -75,9 +75,9 @@ rule pairtools_downsample:
 
 rule pairtools_sort:
     input:
-        "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}.pairs"
+        "results/{replicate}/pairs/{replicate}_ds{downsample}.pairs"
     output:
-        "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
+        "results/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
     conda:
         "../envs/pairtools.yaml"
     shell:
@@ -87,11 +87,11 @@ rule pairtools_sort:
 
 rule pairtools_deduplicate:
     input:
-        "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
+        "results/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
     output:
-        pairtools_deduplicate = "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs",
-        pairtools_duplicates = "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort_removed_duplicates.pairs",
-        pairtools_deduplicate_stats = "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_stats.txt"
+        pairtools_deduplicate = "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs",
+        pairtools_duplicates = "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_removed_duplicates.pairs",
+        pairtools_deduplicate_stats = "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_stats.txt"
     conda:
         "../envs/pairtools.yaml"
     shell:
@@ -106,10 +106,10 @@ rule pairtools_deduplicate:
 
 rule pairtools_select:
     input:
-        "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs"
+        "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs"
     output:
-        pairtools_select = "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs",
-        pairtools_rest = "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_rest.pairs"
+        pairtools_select = "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs",
+        pairtools_rest = "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_rest.pairs"
     conda:
         "../envs/pairtools.yaml"
     shell:
@@ -127,9 +127,9 @@ rule hic:
         restriction_sites = config['juicer_tools_pre_restriction_site_file'],
         norms = ','.join([str(norm) for norm in config['normalizations']])
     input:
-        "results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
+        "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
     output:
-        "results/{merge}/{replicate}/matrix/{replicate}_ds{downsample}.hic"
+        "results/{replicate}/matrix/{replicate}_ds{downsample}.hic"
     conda:
         "../envs/juicer_tools.yaml"
     shell:
@@ -144,9 +144,9 @@ rule hic:
 
 rule mcool:
     input:
-        "results/{merge}/{replicate}/matrix/{replicate}_ds{downsample}.hic"
+        "results/{replicate}/matrix/{replicate}_ds{downsample}.hic"
     output:
-        "results/{merge}/{replicate}/matrix/{replicate}_ds{downsample}.mcool"
+        "results/{replicate}/matrix/{replicate}_ds{downsample}.mcool"
     conda:
         "../envs/hic2cool.yaml"
     shell:

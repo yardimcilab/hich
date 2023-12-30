@@ -6,13 +6,13 @@
 #         If that is not true, an error will be generated. This helps avoid mis-merging replicates due to typos.
 merge_structure:
   EXP_KO:
-    - KO_1
-    - KO_2
-    - KO_3
+    - 1K_KO_1
+    - 1K_KO_2
+    - 1K_KO_3
   EXP_Mock:
-    - Mock_1
-    - Mock_2
-    - Mock_3
+    - 1K_Mock_1
+    - 1K_Mock_2
+    - 1K_Mock_3
 
 # Settings for email alerts
 email_address: ""

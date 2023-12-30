@@ -1,12 +1,10 @@
-include: "instantiate_merges.smk"
-
 rule pairtools_merge:
     input:
-        lambda wildcards: [filename for filename, _, _ in MERGES.format_template \
-            ("results/{merge}/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs", \
-            merge=wildcards.merge, downsample = wildcards.downsample)]
+        lambda wildcards: MERGES.format_template( \
+            "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs", \
+            downsample = [wildcards.downsample])
     output:
-        "results/{merge}/pairs/{merge}_ds{downsample}_sort_dedup_select_merge.pairs"
+        "results/{merge}/pairs/{merge}_ds{downsample}.pairs"
     conda:
         "../envs/pairtools.yaml"
     shell:
@@ -14,9 +12,9 @@ rule pairtools_merge:
 
 rule pairtools_sort_merge:
     input:
-        "results/{merge}/pairs/{merge}_ds{downsample}_sort_dedup_select_merge.pairs"
+        "results/{merge}/pairs/{merge}_ds{downsample}.pairs"
     output:
-        "results/{merge}/pairs/{merge}_ds{downsample}_sort_dedup_select_merge.pairs"
+        "results/{merge}/pairs/{merge}_ds{downsample}_sort.pairs"
     conda:
         "../envs/pairtools.yaml"
     shell:
@@ -31,7 +29,7 @@ rule hic_merge:
         restriction_sites = config['juicer_tools_pre_restriction_site_file'],
         norms = ','.join([str(norm) for norm in config['normalizations']])
     input:
-        "results/{merge}/pairs/{merge}_ds{downsample}_sort_dedup_select_merge.pairs"
+        "results/{merge}/pairs/{merge}_ds{downsample}_sort.pairs"
     output:
         "results/{merge}/matrix/{merge}_ds{downsample}.hic"
     conda:
