@@ -1,4 +1,4 @@
-include: "instantiate_merges.smk"
+include: "merge_plan.smk"
 
 rule align:
     input:
@@ -10,8 +10,11 @@ rule align:
         genome_prefix = config['genome_prefix']
     conda:
         "../envs/bwa_samtools.yaml"
+    log:
+        align = "logs/align/{replicate}.log",
+        to_bam = "logs/to_bam/{replicate}.log"
     shell:
-        """bwa mem -SP5M -t 24 -P {params.genome_prefix:q} {input.r1:q} {input.r2:q} | samtools view -b -o {output:q}"""
+        """bwa mem -SP5M -t 24 -P {params.genome_prefix:q} {input.r1:q} {input.r2:q} 2> {log.align} | samtools view -b -o {output:q} 2> {log.to_bam}"""
 
 rule name_sort:
     input:
@@ -20,8 +23,10 @@ rule name_sort:
         "results/{replicate}/sambam/{replicate}.name_sort.bam"
     conda:
         "../envs/bwa_samtools.yaml"
+    log:
+        "logs/name_sort/{replicate}.log"
     shell:
-        """samtools sort -n -o {output:q} {input:q}"""
+        """samtools sort -n -o {output:q} {input:q} 2> {log}"""
 
 rule pairtools_parse:
     input:
@@ -34,7 +39,9 @@ rule pairtools_parse:
         min_mapq = config['min_mapq'],
         chromsizes = config['chromsizes']
     conda:
-        "../envs/pairtools.yaml"    
+        "../envs/pairtools.yaml"
+    log:
+        "logs/pairtools_parse/{replicate}.log"
     shell:
         """
         pairtools parse {input:q} \
@@ -42,9 +49,9 @@ rule pairtools_parse:
             --output-stats {output.pairtools_parse_stats:q} \
             -c {params.chromsizes:q} \
             --assembly {params.assembly_header} \
-            --min-mapq {params.min_mapq} \
             --nproc-in 24 \
-            --nproc-out 24
+            --nproc-out 24 \
+            &> {log}
         """
 
 rule wait_parse_all:
@@ -52,8 +59,10 @@ rule wait_parse_all:
         [MERGES.format_template("results/{replicate}/pairs/{replicate}.pairs")]
     output:
         "wait_parse_all"
+    log:
+        "logs/wait_parse_all/wait_parse_all.log"
     shell:
-        """touch {output:q}"""
+        """touch {output:q} &> {log}"""
 
 rule pairtools_downsample:
     input:
@@ -61,6 +70,8 @@ rule pairtools_downsample:
         marker = "wait_parse_all"
     output:
         "results/{replicate}/pairs/{replicate}_ds{downsample}.pairs"
+    log:
+        "logs/pairtools_downsample/{replicate}_ds{downsample}.log"
     run:
         downsample = wildcards.downsample
         if downsample == "min":
@@ -71,7 +82,8 @@ rule pairtools_downsample:
                             --output \"{output}\" \
                             --seed 0 \
                             {downsample} \
-                            \"{input.parse}\"""")
+                            \"{input.parse}\" \
+                            &> {log}""")
 
 rule pairtools_sort:
     input:
@@ -80,10 +92,13 @@ rule pairtools_sort:
         "results/{replicate}/pairs/{replicate}_ds{downsample}_sort.pairs"
     conda:
         "../envs/pairtools.yaml"
+    log:
+        "logs/pairtools_sort/{replicate}_ds{downsample}.log"
     shell:
         """pairtools sort \
                     -o {output:q} \
-                    {input:q}"""
+                    {input:q} \
+                    &> {log}"""
 
 rule pairtools_deduplicate:
     input:
@@ -94,6 +109,8 @@ rule pairtools_deduplicate:
         pairtools_deduplicate_stats = "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_stats.txt"
     conda:
         "../envs/pairtools.yaml"
+    log:
+        "logs/pairtools_deduplicate/{replicate}_ds{downsample}.log"
     shell:
         """pairtools dedup \
                     --send-header-to both \
@@ -102,7 +119,8 @@ rule pairtools_deduplicate:
                     --mark-dups \
                     --output-dups {output.pairtools_duplicates:q} \
                     -o {output.pairtools_deduplicate:q} \
-                    {input:q}"""
+                    {input:q} \
+                    &> {log}"""
 
 rule pairtools_select:
     input:
@@ -112,11 +130,14 @@ rule pairtools_select:
         pairtools_rest = "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_rest.pairs"
     conda:
         "../envs/pairtools.yaml"
+    log:
+        "logs/pairtools_select/{replicate}_ds{downsample}.log"
     shell:
         """pairtools select '(pair_type=="UU") or (pair_type=="RU") or (pair_type=="UR")' \
                     --output-rest {output.pairtools_rest} \
                     -o {output.pairtools_select:q} \
-                    {input:q}"""
+                    {input:q} \
+                    &> {log}"""
 
 rule hic:
     params:
@@ -132,6 +153,8 @@ rule hic:
         "results/{replicate}/matrix/{replicate}_ds{downsample}.hic"
     conda:
         "../envs/juicer_tools.yaml"
+    log:
+        "logs/hic/{replicate}_ds{downsample}.log"
     shell:
         """java -Xmx20g -jar {params.juicer_tools_jar:q} pre \
                     -q {params.min_mapq} \
@@ -140,7 +163,8 @@ rule hic:
                     -k {params.norms:q} \
                     {input:q} \
                     {output:q} \
-                    {params.genomeID}"""
+                    {params.genomeID} \
+                    &> {log}"""
 
 rule mcool:
     input:
@@ -149,5 +173,7 @@ rule mcool:
         "results/{replicate}/matrix/{replicate}_ds{downsample}.mcool"
     conda:
         "../envs/hic2cool.yaml"
+    log:
+        "logs/mcool/{replicate}_ds{downsample}.log"
     shell:
-        """hic2cool convert {input:q} {output:q} -p 24"""
+        """hic2cool convert {input:q} {output:q} -p 24 &> {log}"""

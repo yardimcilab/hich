@@ -1,15 +1,6 @@
-# Describe experimental structure.
-# Keys: Experiment prefix. Replicates will be merged into a single overall experiment.
-# Values: Biological replicate prefix to be merged. The workflow expects to find 
-#         fastq/[prefix]_1.fq.gz and fastq[prefix]_2.fq.gz. We expect that all replicate prefixes
-#         associated with their experiment prefix have a substring uniquely identifying them as a group.
-#         If that is not true, an error will be generated. This helps avoid mis-merging replicates due to typos.
 merge_structure:
   MERGE_KO:
     - 1K_KO_1
-    - 1K_KO_2
-    - 1K_KO_3
-  MERGE_KO_23:
     - 1K_KO_2
     - 1K_KO_3
   MERGE_Mock:

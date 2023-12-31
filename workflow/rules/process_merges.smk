@@ -8,8 +8,10 @@ rule pairtools_merge:
         "results/{merge}/pairs/{merge}_ds{downsample}.pairs"
     conda:
         "../envs/pairtools.yaml"
+    log:
+        "logs/pairtools_merge/{merge}_ds{downsample}.log"
     shell:
-        """pairtools merge -o {output:q} {input:q}"""
+        """pairtools merge -o {output:q} {input:q} &> {log}"""
 
 rule pairtools_sort_merge:
     input:
@@ -18,8 +20,10 @@ rule pairtools_sort_merge:
         "results/{merge}/pairs/{merge}_ds{downsample}_sort.pairs"
     conda:
         "../envs/pairtools.yaml"
+    log:
+        "logs/pairtools_sort_merge/{merge}_ds{downsample}.log"
     shell:
-        """pairtools sort -o {output:q} {input:q}"""
+        """pairtools sort -o {output:q} {input:q} &> {log}"""
 
 rule hic_merge:
     params:
@@ -35,6 +39,8 @@ rule hic_merge:
         "results/{merge}/matrix/{merge}_ds{downsample}.hic"
     conda:
         "../envs/juicer_tools.yaml"
+    log:
+        "logs/hic_merge/{merge}_ds{downsample}.log"
     shell:
         """java -Xmx20g -jar {params.juicer_tools_jar:q} pre    -q {params.min_mapq} \
                                                                 -f {params.restriction_sites} \
@@ -42,7 +48,8 @@ rule hic_merge:
                                                                 -k {params.norms:q} \
                                                                 {input:q} \
                                                                 {output:q} \
-                                                                {params.genomeID}"""
+                                                                {params.genomeID} \
+                                                                &> {log}"""
 
 rule mcool_merge:
     input:
@@ -51,5 +58,7 @@ rule mcool_merge:
         "results/{merge}/matrix/{merge}_ds{downsample}.mcool"
     conda:
         "../envs/hic2cool.yaml"
+    log:
+        "logs/mcool_merge/{merge}_ds{downsample}.log"
     shell:
-        """hic2cool convert {input:q} {output:q} -p 24"""
+        """hic2cool convert {input:q} {output:q} -p 24 &> {log}"""
