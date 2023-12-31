@@ -72,8 +72,7 @@ class MergePlan(DiGraph):
         return rep_mrg_options
     
     def _rep_mrg(self, **kwargs):
-        kwargs_replicates = set(kwargs.get("replicates", set()))
-        kwargs_merges = set(kwargs.get("merges", set()))
+        kwargs_replicates, kwargs_merges = self._get_rep_mrg_or_empty(**kwargs)
 
         replicates = self.replicates(kwargs_merges)
         merges = self.merges(kwargs_replicates)
@@ -84,9 +83,14 @@ class MergePlan(DiGraph):
             merges = merges.intersection(kwargs_merges)
 
         kwargs.pop("replicates", None)
-        kwargs.pop("merges", None)
+        kwargs.pop("merge", None)
         
         return self._rep_mrg_intersection(replicates, merges), kwargs
+
+    def _get_rep_mrg_or_empty(self, **kwargs):
+        kwarg_replicates = set(kwargs.get("replicates", set()))
+        kwarg_merges = set(kwargs.get("merge", set()))
+        return kwarg_replicates, kwarg_merges
 
     def _rep_mrg_intersection(self, replicates, merges):
         G = {}

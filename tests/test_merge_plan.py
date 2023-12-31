@@ -1,16 +1,19 @@
-from HiCkory.workflow.scripts.rep_merge import *
+from HiCkory.workflow.scripts.merge_plan import *
 import unittest
 
 class TestMergePlan(unittest.TestCase):
     def setUp(self):
-        self.merge = MergePlan({
-            "a1": ["A"],
-            "a2": ["A", "A23"],
-            "a3": ["A", "A23"],
-            "b1": ["B"],
-            "b2": ["B"],
-            "b3": ["B"]
-        })
+        self.merge_rev_dict = {"A": ["a1", "a2", "a3"], "A23": ["a2", "a3"], "B": ["b1", "b2", "b3"]}
+        self.merge_dict = {
+            "a1": {"A"},
+            "a2": {"A", "A23"},
+            "a3": {"A", "A23"},
+            "b1": {"B"},
+            "b2": {"B"},
+            "b3": {"B"}
+        }
+
+        self.merge = MergePlan(self.merge_dict)
 
         self.simple_merge = MergePlan({
             "a1": ["A"],
@@ -18,11 +21,18 @@ class TestMergePlan(unittest.TestCase):
             "b1": ["B"]
         })
     
+    def test_kv_reverse(self):
+        assert kv_reverse(self.merge_rev_dict) == self.merge_dict
+    
     def test_format_template(self):
         assert self.simple_merge.format_template("{merge}{replicate}{opt1}", opt1 = ["o1", "o2"]) == \
             set(["Aa1o1", "Aa1o2", "Aa2o1", "Aa2o2", "Bb1o1", "Bb1o2"])
         assert self.simple_merge.format_template("{merge}{replicate}", opt1 = ["o1", "o2"]) == \
             set(["Aa1", "Aa2", "Bb1"])
+        assert self.merge.format_template("{merge}{replicate}") == \
+            set(["Aa1", "Aa2", "Aa3", "A23a2", "A23a3", "Bb1", "Bb2", "Bb3"])
+        #assert self.merge.format_template("{replicate}", merge = ["A23"]) == \
+        #    set(["a2", "a3"])
 
     def test_rep_mrg_options(self):
         assert set(self.simple_merge._rep_mrg_options(opt1 = ["o1", "o2"])) == \
@@ -41,17 +51,24 @@ class TestMergePlan(unittest.TestCase):
             set([(("arg1", "a1a"), ), (("arg1", "a1b"),)])
     
     def test_rep_mrg(self):
-        rep_mrg, kwargs = self.merge._rep_mrg(replicates = ["a1"], merges = ["A"])
+        rep_mrg, kwargs = self.merge._rep_mrg(replicates = ["a1"], merge = ["A"])
         assert rep_mrg.same_structure(MergePlan({"a1": ["A"]}))
         assert kwargs == {}
 
-        rep_mrg, kwargs = self.merge._rep_mrg(replicates = ["a1", "a2"], merges = ["A", "A23"], moil = ["for gold"])
+        rep_mrg, kwargs = self.merge._rep_mrg(replicates = ["a1", "a2"], merge = ["A", "A23"], moil = ["for gold"])
         assert rep_mrg.same_structure(MergePlan({"a1": ["A"], "a2": ["A", "A23"]}))
         assert kwargs == {"moil": ["for gold"]}
 
         rep_mrg, kwargs = self.merge._rep_mrg()
         assert rep_mrg.same_structure(self.merge)
         assert kwargs == {}
+
+        rep_mrg, kwargs = self.merge._rep_mrg(merge = ["A23"])
+        assert rep_mrg.same_structure(MergePlan({"a2": ["A23"], "a3": ["A23"]}))
+        assert kwargs == {}
+    
+    def test_rep_mrg_or_empty(self):
+        assert self.merge._get_rep_mrg_or_empty(**{"merge": ["A23"]}) == (set(), {"A23"})
 
     def test_rep_mrg_intersection(self):
         assert self.merge._rep_mrg_intersection(["a1"], ["A"]).same_structure(MergePlan({"a1": ["A"]}))
@@ -69,6 +86,8 @@ class TestMergePlan(unittest.TestCase):
             MergePlan({}))
         assert self.merge._rep_mrg_intersection([], ["in", "the", "midnight", "sun"]).same_structure( \
             MergePlan({}))
+        assert self.merge._rep_mrg_intersection(["a1", "a2", "a3", "b1", "b2", "b3"], ["A23"]).same_structure( \
+            MergePlan({"a2": ["A23"], "a3": ["A23"]}))
 
     def test_replicates(self):
         assert self.merge.replicates() == set(["a1", "a2", "a3", "b1", "b2", "b3"])

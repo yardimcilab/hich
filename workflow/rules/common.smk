@@ -12,4 +12,4 @@ def setup_environment():
 
 setup_environment()
 
-from scripts.rep_merge import *
+from scripts.merge_plan import *

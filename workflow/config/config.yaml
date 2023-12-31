@@ -5,11 +5,14 @@
 #         associated with their experiment prefix have a substring uniquely identifying them as a group.
 #         If that is not true, an error will be generated. This helps avoid mis-merging replicates due to typos.
 merge_structure:
-  EXP_KO:
+  MERGE_KO:
     - 1K_KO_1
     - 1K_KO_2
     - 1K_KO_3
-  EXP_Mock:
+  MERGE_KO_23:
+    - 1K_KO_2
+    - 1K_KO_3
+  MERGE_Mock:
     - 1K_Mock_1
     - 1K_Mock_2
     - 1K_Mock_3

@@ -2,7 +2,8 @@ rule pairtools_merge:
     input:
         lambda wildcards: MERGES.format_template( \
             "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs", \
-            downsample = [wildcards.downsample])
+            downsample = [wildcards.downsample],
+            merge = [wildcards.merge])
     output:
         "results/{merge}/pairs/{merge}_ds{downsample}.pairs"
     conda:
