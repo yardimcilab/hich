@@ -1,8 +1,12 @@
-12/17/2023
+12/31/2023
 Ben Skubi, skubi@ohsu.edu
 Labs of Gurkan Yardimci and Andrew Adey, OHSU
 
-Snakemake workflow for processing from raw .fastq to per-replicate and merged per-experiment .hic and .mcool with several normalization options (VC, VC_SQRT, KR, SCALE).
+
+Pre-process HiC data from .fastq to .mcool and .hic contact matrices.
+Define merges of biological replicates.
+Generate quality control reports.
+
 
 Notes on specific rules:
 
@@ -13,8 +17,6 @@ rule  download_index_reference
     Note: You can either drop symlinks to your reference files in ./resources, or else set parameters to let setup.smk download and index
 
 rules/hic.smk
-rule pairtools_parse:
-    Note: filter out fragments with mapq < 10 (also in rule hic)
 rule pairtools_downsample:
     Note: downsample current replicate .pairs file according to [all replicates min total mapped]/[current replicate total mapped]
 rule deduplicate

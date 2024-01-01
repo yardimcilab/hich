@@ -33,7 +33,8 @@ rule pairtools_parse:
         name_sort = "results/{replicate}/sambam/{replicate}.name_sort.bam"
     output:
         pairtools_parse = "results/{replicate}/pairs/{replicate}.pairs",
-        pairtools_parse_stats = "results/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt"
+        pairtools_parse_stats = "results/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt",
+        pairtools_directory = directory("results/{replicate}/pairs")
     params:
         assembly_header = config['assembly_header'],
         min_mapq = config['min_mapq'],

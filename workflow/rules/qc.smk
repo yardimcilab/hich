@@ -25,7 +25,7 @@ rule multiqc:
     log:
         "logs/multiqc/{merge}.log"
     shell:
-        """multiqc -o {params.directory} -n {params.name} {input} &> {log}"""
+        """multiqc -f -o {params.directory} -n {params.name} {input} &> {log}"""
 
 rule hicrep:
     input:

@@ -1,4 +1,17 @@
-from HiCkory.workflow.scripts.merge_plan import *
+import sys
+import os
+
+# Get the absolute path to the directory containing merge_plan.py
+script_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'workflow', 'scripts'))
+
+# Add this directory to sys.path
+if script_dir not in sys.path:
+    sys.path.insert(0, script_dir)
+
+# Now you can import merge_plan
+from merge_plan import *
+
+
 import unittest
 
 class TestMergePlan(unittest.TestCase):
