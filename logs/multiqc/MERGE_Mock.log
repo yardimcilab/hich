@@ -1,0 +1,20 @@
+
+  /// MultiQC 🔍 | v1.12.dev0
+
+|           multiqc | MultiQC Version v1.19 now available!
+|           multiqc | Search path : /home/groups/ravnica/projects/HiCkory/results/1K_Mock_2/pairs
+|           multiqc | Search path : /home/groups/ravnica/projects/HiCkory/results/1K_Mock_1/pairs
+|           multiqc | Search path : /home/groups/ravnica/projects/HiCkory/results/1K_Mock_3/pairs
+|         searching | ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 27/27  
+|         pairtools | parsing .stats file: results/1K_Mock_2/pairs/1K_Mock_2_dsmin_sort_dedup_stats.txt
+|         pairtools | parsing .stats file: results/1K_Mock_2/pairs/1K_Mock_2_pairtools_parse_stats.txt
+|         pairtools | parsing .stats file: results/1K_Mock_1/pairs/1K_Mock_1_dsmin_sort_dedup_stats.txt
+|         pairtools | parsing .stats file: results/1K_Mock_1/pairs/1K_Mock_1_pairtools_parse_stats.txt
+|         pairtools | parsing .stats file: results/1K_Mock_3/pairs/1K_Mock_3_dsmin_sort_dedup_stats.txt
+|         pairtools | parsing .stats file: results/1K_Mock_3/pairs/1K_Mock_3_pairtools_parse_stats.txt
+|         pairtools | Found 6 reports
+|           multiqc | Compressing plot data
+|            megaqc | Couldn't export data key 'report.general_stats_data'
+|           multiqc | Report      : results/reports/multiqc/MERGE_Mock_multiqc_report.html
+|           multiqc | Data        : results/reports/multiqc/MERGE_Mock_multiqc_report_data
+|           multiqc | MultiQC complete

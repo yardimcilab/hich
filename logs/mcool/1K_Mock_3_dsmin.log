@@ -1,0 +1,24 @@
+##########################
+### hic2cool / convert ###
+##########################
+### Header info from hic
+... Chromosomes:  ['ALL', 'M', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
+... Resolutions:  [10000000, 5000000, 2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2000, 1000]
+... Normalizations:  ['VC', 'VC_SQRT', 'KR', 'SCALE']
+... Genome:  hg38
+### Converting
+... Resolution 10000000 took: 0.24181342124938965 seconds.
+... Resolution 5000000 took: 0.2978506088256836 seconds.
+... Resolution 2500000 took: 0.30051231384277344 seconds.
+... Resolution 1000000 took: 0.3127274513244629 seconds.
+... Resolution 500000 took: 0.316925048828125 seconds.
+... Resolution 250000 took: 0.32170557975769043 seconds.
+... Resolution 100000 took: 0.4180021286010742 seconds.
+... Resolution 50000 took: 0.5717861652374268 seconds.
+... Resolution 25000 took: 0.777435302734375 seconds.
+... Resolution 10000 took: 1.7562530040740967 seconds.
+... Resolution 5000 took: 3.1725082397460938 seconds.
+... Resolution 2000 took: 5.873947620391846 seconds.
+... Resolution 1000 took: 10.666473627090454 seconds.
+### Finished! Output written to: results/1K_Mock_3/matrix/1K_Mock_3_dsmin.mcool
+... This file is higlass compatible.

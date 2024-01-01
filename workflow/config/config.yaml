@@ -7,6 +7,9 @@ merge_structure:
     - 1K_Mock_1
     - 1K_Mock_2
     - 1K_Mock_3
+  MERGE_Mock_23:
+    - 1K_Mock_2
+    - 1K_Mock_3
 
 # Settings for email alerts
 email_address: ""

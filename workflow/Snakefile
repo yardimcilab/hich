@@ -4,10 +4,20 @@ include: "rules/setup.smk"
 include: "rules/process_replicates.smk"
 include: "rules/process_merges.smk"
 include: "rules/email.smk"
+include: "rules/qc.smk"
 
 rule all:
     input:
         [MERGES.format_template("results/{replicate}/matrix/{replicate}_ds{downsample}.mcool", \
             downsample = config['downsample'])] +
         [MERGES.format_template("results/{merge}/matrix/{merge}_ds{downsample}.mcool", \
+            downsample = config['downsample'])] +
+        [MERGES.format_template("results/reports/fastqc/{replicate}_{read}_fastqc.html", \
+            read = "12")] +
+        [MERGES.format_template("results/reports/multiqc/{merge}_multiqc_report.html")] + 
+        [MERGES.format_template("results/reports/hicrep/scores/{node1}_{node2}_ds{downsample}.txt", \
+            node1 = MERGES.nodes(), \
+            node2 = MERGES.nodes(), \
+            downsample = config['downsample'])] + 
+        [MERGES.format_template("results/reports/hicrep/hicrep_ds{downsample}.png", \
             downsample = config['downsample'])]
