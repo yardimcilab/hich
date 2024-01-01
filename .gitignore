@@ -12,3 +12,7 @@ results_full/*
 !results_full/.gitkeep
 resources/*
 !resources/.gitkeep
+results_full
+wait_parse_all
+logs
+logs/*
