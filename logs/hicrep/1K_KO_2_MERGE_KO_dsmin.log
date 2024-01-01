@@ -1,2 +1,0 @@
-/home/groups/ravnica/env/hic/lib/python3.9/site-packages/hicrep/hicrep.py:125: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
-  assert (cool1.chroms()[:] == cool2.chroms()[:]).all()[0],\
