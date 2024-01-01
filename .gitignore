@@ -16,3 +16,6 @@ results_full
 wait_parse_all
 logs
 logs/*
+.vscode
+.pytest_cache
+__pycache__
