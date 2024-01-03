@@ -71,20 +71,14 @@ rule pairtools_downsample:
         marker = "wait_parse_all"
     output:
         "results/{replicate}/pairs/{replicate}_ds{downsample}.pairs"
+    conda:
+        "../envs/pairtools.yaml"
     log:
         "logs/pairtools_downsample/{replicate}_ds{downsample}.log"
-    run:
-        downsample = wildcards.downsample
-        if downsample == "min":
-            total_mapped = compute_replicate_total_mapped("results/{replicate}/pairs/{replicate}_pairtools_parse_stats.txt", MERGES)
-            downsample = min_downsample(total_mapped, wildcards)
-
-        shell(f"""pairtools sample \
-                            --output \"{output}\" \
-                            --seed 0 \
-                            {downsample} \
-                            \"{input.parse}\" \
-                            &> {log}""")
+    params:
+        replicates = " ".join(sorted(list(MERGES.source_nodes())))
+    script:
+        "../scripts/downsample.py"
 
 rule pairtools_sort:
     input:
@@ -146,7 +140,7 @@ rule hic:
         genomeID = config['genomeID'],
         juicer_tools_jar = config['juicer_tools_jar'],
         min_mapq = config['min_mapq'],
-        restriction_sites = config['juicer_tools_pre_restriction_site_file'],
+        restriction_sites = config['restriction_site_file']['juicer_tools_pre'],
         norms = ','.join([str(norm) for norm in config['normalizations']])
     input:
         "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup_select.pairs"
@@ -169,12 +163,26 @@ rule hic:
 
 rule mcool:
     input:
-        "results/{replicate}/matrix/{replicate}_ds{downsample}.hic"
+        "results/{replicate}/pairs/{replicate}_ds{downsample}_sort_dedup.pairs"
     output:
-        "results/{replicate}/matrix/{replicate}_ds{downsample}.mcool"
+        cool = "results/{replicate}/matrix/{replicate}_ds{downsample}.cool",
+        mcool = "results/{replicate}/matrix/{replicate}_ds{downsample}.mcool",
+        cool_digest = "results/{replicate}/matrix/{replicate}_ds{downsample}_digest.cool",
+        mcool_digest = "results/{replicate}/matrix/{replicate}_ds{downsample}_digest.mcool"
+    params:
+        assembly = config["assembly_header"],
+        min_binsize = min(config["resolutions"]),
+        binsizes = ','.join([str(r) for r in config["resolutions"]]),
+        chromsizes = config["chromsizes"],
+        restriction_sites = config['restriction_site_file']['bed_format']
     conda:
-        "../envs/hic2cool.yaml"
+        "../envs/cooler.yaml"
     log:
         "logs/mcool/{replicate}_ds{downsample}.log"
     shell:
-        """hic2cool convert {input:q} {output:q} -p 24 &> {log}"""
+        """
+        cooler cload pairs --assembly {params.assembly} -c1 2 -p1 3 -c2 4 -p2 5 {params.chromsizes}:{params.min_binsize} {input} {output.cool} &> {log};
+        cooler zoomify -r {params.binsizes} --balance --balance-args '--max-iters 1000' {output.cool} &> {log};
+        cooler cload pairs --assembly {params.assembly} -c1 2 -p1 3 -c2 4 -p2 5 {params.restriction_sites} {input} {output.cool_digest} &> {log};
+        cooler zoomify -r {params.binsizes} --balance --balance-args '--max-iters 1000' {output.cool_digest} &> {log}
+        """

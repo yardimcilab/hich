@@ -1,0 +1,6 @@
+name: hicrep_report_env
+dependencies:
+  - matplotlib
+  - numpy
+  - pandas
+  - seaborn

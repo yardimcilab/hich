@@ -6,6 +6,8 @@ rule download_index_reference:
     log:
         wget = "logs/download_index_reference/wget.log",
         bwa_index = "logs/download_index_reference/bwa_index.log",
+    conda:
+        "../envs/bwa_samtools.yaml"
     shell:
         """
         if [ ! -f {output} ]; then

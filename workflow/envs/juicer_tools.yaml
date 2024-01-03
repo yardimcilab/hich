@@ -1,0 +1,9 @@
+name: juicer_tools_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - coreutils
+  - bwa
+  - openjdk=8

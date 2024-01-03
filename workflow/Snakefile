@@ -1,4 +1,4 @@
-configfile: "workflow/config/config.yaml"
+configfile: "config/config.yaml"
 
 include: "rules/setup.smk"
 include: "rules/process_replicates.smk"
@@ -20,4 +20,7 @@ rule all:
             node2 = MERGES.nodes(), \
             downsample = config['downsample'])] + 
         [MERGES.format_template("results/reports/hicrep/hicrep_ds{downsample}.png", \
+            downsample = config['downsample'])] + 
+        [MERGES.format_template("results/{node1}/loops/{node1}_ds{downsample}_mustache.tsv", \
+            node1 = MERGES.nodes(),
             downsample = config['downsample'])]

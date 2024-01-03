@@ -26,17 +26,17 @@ rule pairtools_sort_merge:
         """pairtools sort -o {output:q} {input:q} &> {log}"""
 
 rule hic_merge:
+    input:
+        "results/{merge}/pairs/{merge}_ds{downsample}_sort.pairs"
+    output:
+        "results/{merge}/matrix/{merge}_ds{downsample}.hic"
     params:
         resolutions = ','.join([str(resolution) for resolution in config['resolutions']]),
         genomeID = config['genomeID'],
         juicer_tools_jar = config['juicer_tools_jar'],
         min_mapq = config['min_mapq'],
-        restriction_sites = config['juicer_tools_pre_restriction_site_file'],
+        restriction_sites = config['restriction_site_file']['juicer_tools_pre'],
         norms = ','.join([str(norm) for norm in config['normalizations']])
-    input:
-        "results/{merge}/pairs/{merge}_ds{downsample}_sort.pairs"
-    output:
-        "results/{merge}/matrix/{merge}_ds{downsample}.hic"
     conda:
         "../envs/juicer_tools.yaml"
     log:
@@ -53,12 +53,35 @@ rule hic_merge:
 
 rule mcool_merge:
     input:
-        "results/{merge}/matrix/{merge}_ds{downsample}.hic"
+        #"results/{merge}/matrix/{merge}_ds{downsample}.hic"
+        binned = lambda wildcards: MERGES.format_template( \
+            "results/{replicate}/matrix/{replicate}_ds{downsample}.cool", \
+            downsample = [wildcards.downsample],
+            merge = [wildcards.merge]),
+        digest = lambda wildcards: MERGES.format_template( \
+            "results/{replicate}/matrix/{replicate}_ds{downsample}.cool", \
+            downsample = [wildcards.downsample],
+            merge = [wildcards.merge])
     output:
-        "results/{merge}/matrix/{merge}_ds{downsample}.mcool"
+        cool = "results/{merge}/matrix/{merge}_ds{downsample}.cool",
+        mcool = "results/{merge}/matrix/{merge}_ds{downsample}.mcool",
+        cool_digest = "results/{merge}/matrix/{merge}_ds{downsample}_digest.cool",
+        mcool_digest = "results/{merge}/matrix/{merge}_ds{downsample}_digest.mcool"
+    params:
+        assembly = config["assembly_header"],
+        binsizes = ','.join([str(r) for r in config["resolutions"]]),
+        chromsizes = config["chromsizes"]
     conda:
-        "../envs/hic2cool.yaml"
+        #"../envs/hic2cool.yaml"
+        "../envs/cooler.yaml"
     log:
         "logs/mcool_merge/{merge}_ds{downsample}.log"
     shell:
-        """hic2cool convert {input:q} {output:q} -p 24 &> {log}"""
+        #"""hic2cool convert {input:q} {output:q} -p 24 &> {log}"""
+        # Still need to do cooler digest
+        """
+        cooler merge {output.cool} {input.binned};
+        cooler zoomify -r {params.binsizes} --balance --balance-args '--max-iters 1000' {output.cool} &> {log};
+        cooler merge {output.cool_digest} {input.digest};
+        cooler zoomify -r {params.binsizes} --balance --balance-args '--max-iters 1000' {output.cool_digest} &> {log}
+        """

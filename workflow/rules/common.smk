@@ -1,6 +1,9 @@
 import sys
 from pathlib import Path
 
+conda:
+    "../envs/global.yaml"
+
 def setup_environment():
     # Define the path you want to add to sys.path
     workflow_path = Path(workflow.basedir).parent.as_posix()

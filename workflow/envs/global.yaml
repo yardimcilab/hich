@@ -1,0 +1,8 @@
+name: global
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - networkx
+
+  

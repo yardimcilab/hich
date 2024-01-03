@@ -18,3 +18,5 @@ logs
 logs/*
 .vscode
 .pytest_cache
+quaich
+quaich/*

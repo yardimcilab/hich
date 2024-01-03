@@ -1,8 +1,7 @@
 include: "common.smk"
 
-configfile: "workflow/config/config.yaml"
+configfile: "config/config.yaml"
 MERGES = MergePlan(kv_reverse(config['merge_structure']))
-
 
 wildcard_constraints:
     read = '|'.join(["1", "2"]),

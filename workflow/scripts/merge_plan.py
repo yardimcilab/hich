@@ -124,37 +124,3 @@ class MergePlan(DiGraph):
     
     def sink_nodes(self):
         return set([node for node in self.nodes() if self.in_degree(node) > 0 and self.out_degree(node) == 0])
-
-    
-def read_pairtools_stats(filename, query_name):
-    all_lines = open(filename).readlines()
-
-    for line in all_lines:
-        split = line.split()
-
-        if len(split) < 2:
-            continue
-        
-        line_name = split[0].strip()
-        line_stat = split[1].strip()
-
-        if query_name == line_name:
-            return line_stat
-
-def compute_replicate_total_mapped(statsfile, merges):
-    total_mapped = {}
-
-    for replicate in merges.source_nodes():
-        filename = list(merges.format_template(statsfile, replicate = [replicate]))[0]
-        total_mapped[replicate] = int(read_pairtools_stats(filename, "total_mapped"))
-
-    return total_mapped
-
-def min_downsample(total_mapped, wildcards):
-    all_total_mapped = total_mapped.values()
-    min_total_mapped = min(all_total_mapped)
-
-    replicate = wildcards.replicate
-    replicate_total_mapped = total_mapped[replicate]
-    
-    return min_total_mapped / replicate_total_mapped
