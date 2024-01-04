@@ -84,10 +84,23 @@ hicrep:
   excludeChr: ""
 
 mustache:
-  # resolution: Can use 'kb' or 'mb' suffix, in which case mustache will use the first number multiplied by 1000 or 1000000 respectively
-  resolution: "5kb"
-  chromosomes: "-ch 1"
-  pThreshold: "--pThreshold 0.1"
+  # resolution, distance: Can use 'kb' or 'mb' suffix, in which case mustache will use the first number multiplied by 1000 or 1000000 respectively
+  resolution: "--resolution 10kb"
+  distance: "--distance 100kb"
+  chromosomes: "--chromosome 1 2 3"
+  pThreshold: "--pThreshold 0.05"
   sigmaZero: ""
   sparsityThreshold: "--sparsityThreshold 0.88"
-  normalization: "--normalization KR"
+  normalization: "--normalization VC_SQRT"
+  filename_suffix: "mustache"
+
+diff_mustache:
+  # resolution, distance: Can use 'kb' or 'mb' suffix, in which case mustache will use the first number multiplied by 1000 or 1000000 respectively
+  resolution: "--resolution 10kb"
+  distance: "--distance 100kb"
+  chromosomes: "--chromosome 1 2 3"
+  pThreshold: "--pThreshold 0.05"
+  sigmaZero: ""
+  sparsityThreshold: "--sparsityThreshold 0.88"
+  normalization: "--normalization VC_SQRT"
+  filename_suffix: "diff_mustache"

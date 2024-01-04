@@ -34,6 +34,20 @@ class TestMergePlan(unittest.TestCase):
             "b1": ["B"]
         })
     
+    def test_format_template_group_combinations(self):
+        assert self.simple_merge.format_template_group_combinations("{node1}{node2}{param}", \
+                                                                    [self.simple_merge.source_nodes(), self.simple_merge.sink_nodes()], \
+                                                                    ["node1", "node2"], \
+                                                                    False, \
+                                                                    param = ["param"]) == \
+                ["ABparam", "a1a2param", "a1b1param", "a2b1param"]
+        assert self.simple_merge.format_template_group_combinations("{node1}{node2}", \
+                                                                    [self.simple_merge.source_nodes(), self.simple_merge.sink_nodes()], \
+                                                                    ["node1", "node2"], \
+                                                                    True) == \
+                ["AA", "AB", "BB", "a1a1", "a1a2", "a1b1", "a2a2", "a2b1", "b1b1"]
+        
+
     def test_kv_reverse(self):
         assert kv_reverse(self.merge_rev_dict) == self.merge_dict
     

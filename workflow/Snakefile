@@ -5,6 +5,7 @@ include: "rules/process_replicates.smk"
 include: "rules/process_merges.smk"
 include: "rules/email.smk"
 include: "rules/qc.smk"
+include: "rules/feature_detection.smk"
 
 rule all:
     input:
@@ -21,6 +22,14 @@ rule all:
             downsample = config['downsample'])] + 
         [MERGES.format_template("results/reports/hicrep/hicrep_ds{downsample}.png", \
             downsample = config['downsample'])] + 
-        [MERGES.format_template("results/{node1}/loops/{node1}_ds{downsample}_mustache.tsv", \
+        [MERGES.format_template("results/reports/mustache/{node1}/loops/{node1}_ds{downsample}_{mustache_suffix}.tsv", \
             node1 = MERGES.nodes(),
-            downsample = config['downsample'])]
+            downsample = config['downsample'],
+            mustache_suffix = [config['mustache']['filename_suffix']])] + 
+        [MERGES.format_template_group_combinations("results/reports/diff_mustache/{node1}_{node2}_ds{downsample}_{diff_mustache_suffix}.tsv.{loop_type}", \
+            [MERGES.source_nodes(), MERGES.sink_nodes()],
+            ["node1", "node2"],
+            False,
+            downsample = config['downsample'],
+            diff_mustache_suffix = [config['diff_mustache']['filename_suffix']],
+            loop_type = ["diffloop1", "diffloop2"])]
