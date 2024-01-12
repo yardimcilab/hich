@@ -10,6 +10,8 @@ rule pairtools_merge:
         "../envs/pairtools.yaml"
     log:
         "logs/pairtools_merge/{merge}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/pairtools_merge/{merge}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """pairtools merge -o {output:q} {input:q} &> {log}"""
 
@@ -22,6 +24,8 @@ rule pairtools_sort_merge:
         "../envs/pairtools.yaml"
     log:
         "logs/pairtools_sort_merge/{merge}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/pairtools_sort_merge/{merge}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """pairtools sort -o {output:q} {input:q} &> {log}"""
 
@@ -34,16 +38,16 @@ rule hic_merge:
         resolutions = ','.join([str(resolution) for resolution in config['resolutions']]),
         genomeID = config['genomeID'],
         juicer_tools_jar = config['juicer_tools_jar'],
-        min_mapq = config['min_mapq'],
         restriction_sites = config['restriction_site_file']['juicer_tools_pre'],
         norms = ','.join([str(norm) for norm in config['normalizations']])
     conda:
         "../envs/juicer_tools.yaml"
     log:
         "logs/hic_merge/{merge}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/hic_merge/{merge}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
-        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre    -q {params.min_mapq} \
-                                                                -f {params.restriction_sites} \
+        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre    -f {params.restriction_sites} \
                                                                 -r {params.resolutions:q} \
                                                                 -k {params.norms:q} \
                                                                 {input:q} \
@@ -76,6 +80,8 @@ rule mcool_merge:
         "../envs/cooler.yaml"
     log:
         "logs/mcool_merge/{merge}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/mcool_merge/{merge}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         #"""hic2cool convert {input:q} {output:q} -p 24 &> {log}"""
         # Still need to do cooler digest

@@ -7,14 +7,19 @@ rule align:
     output:
         "results/{replicate}/sambam/{replicate}.bam"
     params:
-        genome_prefix = config['genome_prefix']
+        genome_prefix = config['genome_prefix'],
+        min_mapq = config['bwa_mem_min_mapq']
     conda:
         "../envs/bwa_samtools.yaml"
     log:
         align = "logs/align/{replicate}.log",
         to_bam = "logs/to_bam/{replicate}.log"
+    benchmark:
+        repeat("benchmarks/align/{replicate}.tsv", config["benchmark_repeat"])
+    resources:
+        mem_gb=10
     shell:
-        """bwa mem -SP5M -t 24 -P {params.genome_prefix:q} {input.r1:q} {input.r2:q} 2> {log.align} | samtools view -b -o {output:q} 2> {log.to_bam}"""
+        """bwa mem -SP5M {params.min_mapq} -P {params.genome_prefix:q} {input.r1:q} {input.r2:q} 2> {log.align} | samtools view -b -o {output:q} 2> {log.to_bam}"""
 
 rule name_sort:
     input:
@@ -25,6 +30,8 @@ rule name_sort:
         "../envs/bwa_samtools.yaml"
     log:
         "logs/name_sort/{replicate}.log"
+    benchmark:
+        repeat("benchmarks/name_sort/{replicate}.tsv", config["benchmark_repeat"])
     shell:
         """samtools sort -n -o {output:q} {input:q} 2> {log}"""
 
@@ -37,21 +44,25 @@ rule pairtools_parse:
         pairtools_directory = directory("results/{replicate}/pairs")
     params:
         assembly_header = config['assembly_header'],
-        min_mapq = config['min_mapq'],
+        min_mapq = config['pairtools_parse_min_mapq'],
         chromsizes = config['chromsizes']
     conda:
         "../envs/pairtools.yaml"
     log:
         "logs/pairtools_parse/{replicate}.log"
+    threads: 24
+    benchmark:
+        repeat("benchmarks/pairtools_parse/{replicate}.tsv", config["benchmark_repeat"])
     shell:
         """
         pairtools parse {input:q} \
+            {params.min_mapq} \
             -o {output.pairtools_parse:q} \
             --output-stats {output.pairtools_parse_stats:q} \
             -c {params.chromsizes:q} \
             --assembly {params.assembly_header} \
-            --nproc-in 24 \
-            --nproc-out 24 \
+            --nproc-in {threads} \
+            --nproc-out {threads} \
             &> {log}
         """
 
@@ -62,6 +73,8 @@ rule wait_parse_all:
         "wait_parse_all"
     log:
         "logs/wait_parse_all/wait_parse_all.log"
+    benchmark:
+        repeat("benchmarks/wait_parse_all/wait_parse_all.tsv", config["benchmark_repeat"])
     shell:
         """touch {output:q} &> {log}"""
 
@@ -77,6 +90,8 @@ rule pairtools_downsample:
         "logs/pairtools_downsample/{replicate}_ds{downsample}.log"
     params:
         replicates = " ".join(sorted(list(MERGES.source_nodes())))
+    benchmark:
+        repeat("benchmarks/pairtools_downsample/{replicate}_ds{downsample}.tsv", config["benchmark_repeat"])
     script:
         "../scripts/downsample.py"
 
@@ -89,6 +104,8 @@ rule pairtools_sort:
         "../envs/pairtools.yaml"
     log:
         "logs/pairtools_sort/{replicate}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/pairtools_sort/{replicate}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """pairtools sort \
                     -o {output:q} \
@@ -106,6 +123,8 @@ rule pairtools_deduplicate:
         "../envs/pairtools.yaml"
     log:
         "logs/pairtools_deduplicate/{replicate}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/pairtools_deduplicate/{replicate}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """pairtools dedup \
                     --send-header-to both \
@@ -127,6 +146,8 @@ rule pairtools_select:
         "../envs/pairtools.yaml"
     log:
         "logs/pairtools_select/{replicate}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/pairtools_select/{replicate}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """pairtools select '(pair_type=="UU") or (pair_type=="RU") or (pair_type=="UR")' \
                     --output-rest {output.pairtools_rest} \
@@ -139,7 +160,6 @@ rule hic:
         resolutions = ','.join([str(resolution) for resolution in config['resolutions']]),
         genomeID = config['genomeID'],
         juicer_tools_jar = config['juicer_tools_jar'],
-        min_mapq = config['min_mapq'],
         restriction_sites = config['restriction_site_file']['juicer_tools_pre'],
         norms = ','.join([str(norm) for norm in config['normalizations']])
     input:
@@ -150,9 +170,10 @@ rule hic:
         "../envs/juicer_tools.yaml"
     log:
         "logs/hic/{replicate}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/hic/{replicate}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """java -Xmx20g -jar {params.juicer_tools_jar:q} pre \
-                    -q {params.min_mapq} \
                     -f {params.restriction_sites} \
                     -r {params.resolutions:q} \
                     -k {params.norms:q} \
@@ -179,6 +200,8 @@ rule mcool:
         "../envs/cooler.yaml"
     log:
         "logs/mcool/{replicate}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/mcool/{replicate}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """
         cooler cload pairs --assembly {params.assembly} -c1 2 -p1 3 -c2 4 -p2 5 {params.chromsizes}:{params.min_binsize} {input} {output.cool} &> {log};

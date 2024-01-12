@@ -15,6 +15,8 @@ rule mustache:
         "logs/mustache/{node1}_ds{downsample}_{mustache_suffix}.log"
     conda:
         "../envs/mustache.yaml"
+    benchmark:
+        repeat("benchmarks/mustache/{node1}_ds{downsample}_{mustache_suffix}.tsv", config["benchmark_repeat"])
     shell:
         """mustache {params.resolution} \
                     {params.distance} \
@@ -44,6 +46,8 @@ rule diff_mustache:
         output_base = "results/reports/diff_mustache/{node1}_{node2}_ds{downsample}_{diff_mustache_suffix}.tsv",
     log:
         "logs/diff_mustache/{node1}_{node2}_ds{downsample}_{diff_mustache_suffix}.log"
+    benchmark:
+        repeat("benchmarks/diff_mustache/{node1}_{node2}_ds{downsample}_{diff_mustache_suffix}.tsv", config["benchmark_repeat"])
     conda:
         "../envs/mustache.yaml"
     shell:

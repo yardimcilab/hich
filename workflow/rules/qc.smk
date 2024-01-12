@@ -11,8 +11,10 @@ rule fastqc:
         "../envs/fastqc.yaml"
     log:
         "logs/fastqc/{replicate}_{read}.log"
+    benchmark:
+        repeat("benchmarks/fastqc/{replicate}_{read}.tsv", config["benchmark_repeat"])
     shell:
-        """fastqc -o {params.output_dir} {input} 2> {log}"""
+        """fastqc -o {params.output_dir} {input} &> {log}"""
 
 rule multiqc:
     input:
@@ -35,6 +37,8 @@ rule multiqc:
         "../envs/multiqc.yaml"
     log:
         "logs/multiqc/{merge}.log"
+    benchmark:
+        repeat("benchmarks/multiqc/{merge}.tsv", config["benchmark_repeat"])
     shell:
         """multiqc -m pairtools -f -o {params.directory} -n {params.name} {input.dir} &> {log}"""
 
@@ -43,24 +47,26 @@ rule hicrep:
         "results/{node1}/matrix/{node1}_ds{downsample}.mcool",
         "results/{node2}/matrix/{node2}_ds{downsample}.mcool"
     output:
-        scores = "results/reports/hicrep/scores/{node1}_{node2}_ds{downsample}.txt",
+        scores = "results/reports/hicrep/scores/{node1}_{node2}_ds{downsample}.txt"
     params:
         binSize = config["hicrep"]["binSize"],
         h = config["hicrep"]["h"],
         dBPMax = config["hicrep"]["dBPMax"],
         bDownSample = config["hicrep"]["bDownSample"],
         chrNames = config["hicrep"]["chrNames"],
-        excludeChr = config["hicrep"]["excludeChr"]
-
+        excludeChr = config["hicrep"]["excludeChr"],
+        caption = "results/reports/hicrep/captions/{downsample}.txt"
     conda:
         "../envs/hicrep.yaml"
     log:
         "logs/hicrep/{node1}_{node2}_ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/hicrep/{node1}_{node2}_ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """
-        hicrep {input} {output.scores} {params.binSize} {params.h} {params.dBPMax} {params.bDownSample} {params.chrNames} {params.excludeChr} 2> {log};
+        hicrep {input} {output.scores} {params.binSize} {params.h} {params.dBPMax} {params.bDownSample} {params.chrNames} {params.excludeChr} &> {log};
         mkdir -p results/reports/hicrep/captions;
-        echo results/reports/hicrep/scores/{wildcards.node1}_{wildcards.node2}_ds{wildcards.downsample}.txt {wildcards.downsample} {wildcards.node1} {wildcards.node2} >> results/reports/hicrep/captions/{wildcards.downsample}.txt
+        echo results/reports/hicrep/scores/{wildcards.node1}_{wildcards.node2}_ds{wildcards.downsample}.txt {wildcards.downsample} {wildcards.node1} {wildcards.node2} >> {params.caption}
         """
 
 rule hicrep_heatmap:
@@ -71,11 +77,16 @@ rule hicrep_heatmap:
                             downsample = wildcards.downsample)
     output:
         "results/reports/hicrep/hicrep_ds{downsample}.png"
+    params:
+        caption = "results/reports/hicrep/captions/{downsample}.txt"
     conda:
         "../envs/hicrep_heatmap.yaml"
     log:
         "logs/hicrep_heatmap/ds{downsample}.log"
+    benchmark:
+        repeat("benchmarks/hicrep/ds{downsample}.tsv", config["benchmark_repeat"])
     shell:
         """
-        python workflow/scripts/hicrep_heatmap.py --scores {input.scores} --caption results/reports/hicrep/captions/{wildcards.downsample}.txt --output {output} &> {log}
+        python workflow/scripts/hicrep_heatmap.py --scores {input.scores} --caption {params.caption} --output {output} &> {log};
+        rm {params.caption}
         """

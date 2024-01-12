@@ -1,15 +1,34 @@
+# benchmark_repeat: number of times a rule will be repeated for a particular
+# sample for benchmarking purposes. Set to 1 for a normal (non-benchmarking) run.
+benchmark_repeat: 1
+
 merge_structure:
   MERGE_KO:
-    - 1K_KO_1
-    - 1K_KO_2
-    - 1K_KO_3
+    - 1_1M_KO_1
+    - 1_1M_KO_2
+    - 1_1M_KO_3
+    - 2_1M_KO_1
+    - 2_1M_KO_2
+    - 2_1M_KO_3
+    - 3_1M_KO_1
+    - 3_1M_KO_2
+    - 3_1M_KO_3
+    - 4_1M_KO_1
+    - 4_1M_KO_2
+    - 4_1M_KO_3
   MERGE_Mock:
-    - 1K_Mock_1
-    - 1K_Mock_2
-    - 1K_Mock_3
-  MERGE_Mock_23:
-    - 1K_Mock_2
-    - 1K_Mock_3
+    - 1_1M_Mock_1
+    - 1_1M_Mock_2
+    - 1_1M_Mock_3
+    - 2_1M_Mock_1
+    - 2_1M_Mock_2
+    - 2_1M_Mock_3
+    - 3_1M_Mock_1
+    - 3_1M_Mock_2
+    - 3_1M_Mock_3
+    - 4_1M_Mock_1
+    - 4_1M_Mock_2
+    - 4_1M_Mock_3
 
 # Settings for email alerts
 email_address: ""
@@ -30,7 +49,7 @@ assembly_urls:
   hg38: "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz"
 
 # From juicer tools pre documentation (https://github.com/aidenlab/juicer/wiki/Pre#restriction-site-file-format)
-# IMPORTANT NOTE pre throws away reads that map to the same restriction fragment.
+# IMPORTANT NOTE pre (intentionally) throws away reads that map to the same restriction fragment.
 restriction_site_file:
   juicer_tools_pre: "resources/hg38_Arima.txt"
   bed_format: "resources/hg38_Arima.bed"
@@ -42,7 +61,8 @@ chromsizes: "/home/groups/ravnica/projects/sciMET_GCC/230410_replication/ref/hg3
 juicer_tools_jar: "/home/groups/ravnica/src/juicer/juicer_tools_1.22.01.jar"
 
 # min mapq to filter in pairtools parse and juicer_tools pre
-min_mapq: 10
+pairtools_parse_min_mapq: "--min-mapq 10"
+bwa_mem_min_mapq: "-T 10"
 
 # downsampling strategies. Valid options are numbers from 0-1 (uniform downsampling to that fraction of reads) and "min",
 # which calculates the minimum total_mapped statistic from pairtools parse across all replicates, then downsamples each
