@@ -3,32 +3,12 @@
 benchmark_repeat: 1
 
 merge_structure:
-  MERGE_KO:
-    - 1_1M_KO_1
-    - 1_1M_KO_2
-    - 1_1M_KO_3
-    - 2_1M_KO_1
-    - 2_1M_KO_2
-    - 2_1M_KO_3
-    - 3_1M_KO_1
-    - 3_1M_KO_2
-    - 3_1M_KO_3
-    - 4_1M_KO_1
-    - 4_1M_KO_2
-    - 4_1M_KO_3
   MERGE_Mock:
-    - 1_1M_Mock_1
-    - 1_1M_Mock_2
-    - 1_1M_Mock_3
-    - 2_1M_Mock_1
-    - 2_1M_Mock_2
-    - 2_1M_Mock_3
-    - 3_1M_Mock_1
-    - 3_1M_Mock_2
-    - 3_1M_Mock_3
-    - 4_1M_Mock_1
-    - 4_1M_Mock_2
-    - 4_1M_Mock_3
+    - 1k_Mock_1
+    - 10k_Mock_1
+    - 100k_Mock_1
+    - 1M_Mock_1
+    - 10M_Mock_1
 
 # Settings for email alerts
 email_address: ""

@@ -29,7 +29,8 @@ rule all:
         [MERGES.format_template_group_combinations("results/reports/diff_mustache/{node1}_{node2}_ds{downsample}_{diff_mustache_suffix}.tsv.{loop_type}", \
             [MERGES.source_nodes(), MERGES.sink_nodes()],
             ["node1", "node2"],
-            False,
+            with_replacement = False,
+            crash_toosmall_groups = False,
             downsample = config['downsample'],
             diff_mustache_suffix = [config['diff_mustache']['filename_suffix']],
             loop_type = ["diffloop1", "diffloop2"])]

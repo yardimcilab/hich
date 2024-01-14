@@ -29,24 +29,62 @@ class TestMergePlan(unittest.TestCase):
         self.merge = MergePlan(self.merge_dict)
 
         self.simple_merge = MergePlan({
-            "a1": ["A"],
-            "a2": ["A"],
-            "b1": ["B"]
+            "a1": {"A"},
+            "a2": {"A"},
+            "b1": {"B"}
         })
+
+        self.two_rep_single_merge = MergePlan({
+            "a1": {"A"},
+            "a2": {"A"}
+        })
+
+        self.single_rep_two_merges = MergePlan({
+            "a1": {"A", "B"}
+        })
+
+        self.single_merge_single_rep = MergePlan({
+            "a1": {"A"}
+        })
+
+        self.empty = MergePlan({})
     
     def test_format_template_group_combinations(self):
         assert self.simple_merge.format_template_group_combinations("{node1}{node2}{param}", \
                                                                     [self.simple_merge.source_nodes(), self.simple_merge.sink_nodes()], \
                                                                     ["node1", "node2"], \
-                                                                    False, \
+                                                                    with_replacement = False, \
                                                                     param = ["param"]) == \
-                ["ABparam", "a1a2param", "a1b1param", "a2b1param"]
+                sorted(["ABparam", "a1a2param", "a1b1param", "a2b1param"])
         assert self.simple_merge.format_template_group_combinations("{node1}{node2}", \
                                                                     [self.simple_merge.source_nodes(), self.simple_merge.sink_nodes()], \
                                                                     ["node1", "node2"], \
-                                                                    True) == \
-                ["AA", "AB", "BB", "a1a1", "a1a2", "a1b1", "a2a2", "a2b1", "b1b1"]
-        
+                                                                    with_replacement = True) == \
+                sorted(["AA", "AB", "BB", "a1a1", "a1a2", "a1b1", "a2a2", "a2b1", "b1b1"])
+        assert self.two_rep_single_merge.format_template_group_combinations("{node1}{node2}", \
+                                                                    [self.two_rep_single_merge.source_nodes(), self.two_rep_single_merge.sink_nodes()], \
+                                                                    ["node1", "node2"], \
+                                                                    with_replacement = True,
+                                                                    crash_toosmall_groups = False) == \
+                sorted(["a1a1", "a1a2", "a2a2"])
+        assert self.single_rep_two_merges.format_template_group_combinations("{node1}{node2}", \
+                                                                    [self.single_rep_two_merges.source_nodes(), self.single_rep_two_merges.sink_nodes()], \
+                                                                    ["node1", "node2"], \
+                                                                    with_replacement = True,
+                                                                    crash_toosmall_groups = False) == \
+                sorted(["AB", "AA", "BB"])
+        assert self.single_merge_single_rep.format_template_group_combinations("{node1}{node2}", \
+                                                                    [self.single_merge_single_rep.source_nodes(), self.single_merge_single_rep.sink_nodes()], \
+                                                                    ["node1", "node2"], \
+                                                                    with_replacement = True,
+                                                                    crash_toosmall_groups = False) == \
+                []
+        assert self.empty.format_template_group_combinations("{node1}{node2}", \
+                                                                    [self.empty.source_nodes(), self.empty.sink_nodes()], \
+                                                                    ["node1", "node2"], \
+                                                                    with_replacement = True,
+                                                                    crash_toosmall_groups = False) == \
+                []                
 
     def test_kv_reverse(self):
         assert kv_reverse(self.merge_rev_dict) == self.merge_dict

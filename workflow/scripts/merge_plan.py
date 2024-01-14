@@ -53,12 +53,14 @@ class MergePlan(DiGraph):
                 self.add_node(value)
                 self.add_edge(key, value)
     
-    def format_template_group_combinations(self, template, groups, combo_kwarg_keys, with_replacement = True, **kwargs):
+    def format_template_group_combinations(self, template, groups, combo_kwarg_keys, with_replacement = True, crash_toosmall_groups = True, **kwargs):
         formatted = []
         comb_func = it.combinations_with_replacement if with_replacement else it.combinations
         r = len(combo_kwarg_keys)
         for group in groups:
-            assert len(group) >= r, "{len(group)} elements in {group}, but combination size is set at {r} by number of kwarg_keys {kwarg_keys}!"
+            if len(group) < r:
+                assert not crash_toosmall_groups, f"{len(group)} elements in {group}, but combination size is set at {r} by number of kwarg_keys {combo_kwarg_keys}!"
+                continue
             combinations = sorted(list(comb_func(group, r)))
             for combination in combinations:
                 new_kwargs = {key: [val] for key, val in zip(combo_kwarg_keys, sorted(combination))}
