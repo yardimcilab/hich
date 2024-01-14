@@ -9,6 +9,9 @@ include: "rules/feature_detection.smk"
 
 rule all:
     input:
+        "resources/bwa-mem2/bwa-mem2", \
+        config['genome_prefix'], \
+        config['genome_prefix'] + ".bwt.2bit.64", \
         [MERGES.format_template("results/{replicate}/matrix/{replicate}_ds{downsample}.mcool", \
             downsample = config['downsample'])] +
         [MERGES.format_template("results/{merge}/matrix/{merge}_ds{downsample}.mcool", \

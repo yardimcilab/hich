@@ -3,23 +3,23 @@ include: "merge_plan.smk"
 rule align:
     input:
         r1 = "fastq/{replicate}_1.fq.gz",
-        r2 = "fastq/{replicate}_2.fq.gz"
+        r2 = "fastq/{replicate}_2.fq.gz",
+        index = config['genome_prefix'] + ".bwt.2bit.64"
     output:
         "results/{replicate}/sambam/{replicate}.bam"
     params:
         genome_prefix = config['genome_prefix'],
         min_mapq = config['bwa_mem_min_mapq']
     conda:
-        "../envs/bwa_samtools.yaml"
+        "../envs/samtools.yaml"
     log:
         align = "logs/align/{replicate}.log",
         to_bam = "logs/to_bam/{replicate}.log"
     benchmark:
         repeat("benchmarks/align/{replicate}.tsv", config["benchmark_repeat"])
-    resources:
-        mem_gb=10
+    threads: workflow.cores
     shell:
-        """bwa mem -SP5M {params.min_mapq} -P {params.genome_prefix:q} {input.r1:q} {input.r2:q} 2> {log.align} | samtools view -b -o {output:q} 2> {log.to_bam}"""
+        """resources/bwa-mem2/bwa-mem2 mem -t {threads} -SP5M {params.min_mapq} -P {params.genome_prefix:q} {input.r1:q} {input.r2:q} 2> {log.align} | samtools view -b -o {output:q} 2> {log.to_bam}"""
 
 rule name_sort:
     input:
@@ -27,7 +27,7 @@ rule name_sort:
     output:
         "results/{replicate}/sambam/{replicate}.name_sort.bam"
     conda:
-        "../envs/bwa_samtools.yaml"
+        "../envs/samtools.yaml"
     log:
         "logs/name_sort/{replicate}.log"
     benchmark:
@@ -70,7 +70,7 @@ rule wait_parse_all:
     input:
         [MERGES.format_template("results/{replicate}/pairs/{replicate}.pairs")]
     output:
-        "wait_parse_all"
+        "results/wait_parse_all"
     log:
         "logs/wait_parse_all/wait_parse_all.log"
     benchmark:
@@ -81,7 +81,7 @@ rule wait_parse_all:
 rule pairtools_downsample:
     input:
         parse = "results/{replicate}/pairs/{replicate}.pairs",
-        marker = "wait_parse_all"
+        marker = "results/wait_parse_all"
     output:
         "results/{replicate}/pairs/{replicate}_ds{downsample}.pairs"
     conda:
