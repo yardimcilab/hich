@@ -11,7 +11,7 @@ merge_structure:
     - 10M_Mock_1
 
 # Settings for email alerts
-email_address: ""
+email_address: "skubi@ohsu.edu"
 email_subject_error: "[Snakemake Alert] Failure"
 email_body_error: "An error occurred in the EZH2 Knockout pipeline."
 email_subject_success: "[Snakemake Alert] Success"
@@ -35,7 +35,7 @@ restriction_site_file:
   bed_format: "resources/hg38_Arima.bed"
 
 # location of chromsizes file, used by pairtools parse
-chromsizes: "/home/groups/ravnica/projects/sciMET_GCC/230410_replication/ref/hg38.noalt.sizes"
+chromsizes: "resources/hg38.noalt.sizes"
 
 # location of juicer_tools .jar
 juicer_tools_jar: "/home/groups/ravnica/src/juicer/juicer_tools_1.22.01.jar"

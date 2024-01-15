@@ -50,7 +50,7 @@ rule pairtools_parse:
         "../envs/pairtools.yaml"
     log:
         "logs/pairtools_parse/{replicate}.log"
-    threads: 24
+    threads: workflow.cores
     benchmark:
         repeat("benchmarks/pairtools_parse/{replicate}.tsv", config["benchmark_repeat"])
     shell:
@@ -172,8 +172,10 @@ rule hic:
         "logs/hic/{replicate}_ds{downsample}.log"
     benchmark:
         repeat("benchmarks/hic/{replicate}_ds{downsample}.tsv", config["benchmark_repeat"])
+    resources:
+        GiB=2
     shell:
-        """java -Xmx20g -jar {params.juicer_tools_jar:q} pre \
+        """java -Xmx{resources.GiB}g -jar {params.juicer_tools_jar:q} pre \
                     -f {params.restriction_sites} \
                     -r {params.resolutions:q} \
                     -k {params.norms:q} \
