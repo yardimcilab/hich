@@ -1,5 +1,8 @@
-# Rewire to take from downsample_tr
 rule merge_tr:
+    """
+    Merge technical replicate .pairs files into a single biological replicate .pairs and
+    produce output statistics for the bioreps multiqc report
+    """
     input:
         pairs = lambda wc: expand("results/{proc}/{cond}/{br}/{tr}/{tr}_downsample.pairs",
                         proc = wc.proc,
@@ -20,6 +23,12 @@ rule merge_tr:
     shell: """pairtools merge -o {output.pairs:q} {input.pairs:q} &>> {log}; pairtools stats --merge -o {output.stats:q} {input.stats:q};"""
 
 rule dedup_br:
+    """
+    Deduplicate biological replicates ( we can do this *after* merging, as duplicates represent
+    real biological information once duplicates within technical replicates have been removed).
+
+    Also produce statistics for biological replicates multiqc report.
+    """
     input: "results/{proc}/{cond}/{br}/{br}.pairs"
     output:
         dedup = "results/{proc}/{cond}/{br}/{br}_dedup.pairs",
@@ -42,21 +51,34 @@ rule dedup_br:
         """
 
 rule calculate_downsample_br:
+    """
+    Compute the size to downsample each biological replicate to. If the config.yaml process parameter 'downsample'
+    for the process being run is to_min_pairs_size, a group of .pairs files to compare must be
+    defined. Within that group, the size of each .pairs file is computed, and the ratio of
+    [smallest .pair]/[current .pair] is computed. The current .pair file will be downsampled by that
+    ratio.
+
+    Alternatively, all files can be downsampled to a constant ratio. To leave them unchanged, use '1'
+    or leave the downsample parameter unspecified.
+    """
     input:
         lambda wc: tree_expand("results/{proc}/{cond}/{br}/{br}_dedup.pairs",
                                         config['processes'][wc.proc],
                                         [('conditions', 'cond'), ('bioreps', 'br')],
                                         proc = wc.proc)
     output: "results/{proc}/.markers/calculate_downsample_br"
+    conda: "../envs/minimal_python.yaml"
     benchmark: "benchmark/calculate_downsample_br/{proc}.tsv"
     log: "log/calculate_downsample_br/{proc}.log"
     params:
         process = lambda wc: config['processes'][wc.proc],
         input_type='bioreps'
-
     script: "../scripts/calculate_downsample.py"
 
 rule downsample_br:
+    """
+    Downsample all biological replicates to sizes computed in calculate_downsample_br
+    """
     input:
         pairs = "results/{proc}/{cond}/{br}/{br}_dedup.pairs",
         fractions = "results/{proc}/.markers/calculate_downsample_br"
@@ -67,6 +89,9 @@ rule downsample_br:
     script: "../scripts/downsample.py"
 
 rule downsample_stats_br:
+    """
+    Compute statistics on downsampled biological replicates for inclusion in multiqc report.
+    """
     input:
         pairs = "results/{proc}/{cond}/{br}/{br}_downsample.pairs"
     output: "results/{proc}/reports/multiqc/bioreps/{cond}_{br}_downsample_stats.txt"
@@ -76,6 +101,15 @@ rule downsample_stats_br:
     shell: """pairtools stats -o {output} {input}"""
 
 rule hic_br:
+    """
+    Produce .hic files from downsampled single biological replicate .pairs files at specified resolutions.
+    If restriction sites are provided, a per-fragments resolution will be included as well.
+
+    Includes normalizations for juicer tools pre
+    https://github.com/aidenlab/juicer/wiki/Pre
+
+    Note that this will only be produced if explicitly required by rule all.
+    """
     input:
         pairs = "results/{proc}/{cond}/{br}/{br}_downsample.pairs",
         re_sites = lambda wc: config['processes'][wc.proc]['conditions'][wc.cond]['genome']['restriction_sites']['juicer_tools'],
@@ -86,8 +120,7 @@ rule hic_br:
         bin_sizes = lambda wc:  fmtl(config['processes'][wc.proc]['parameters']['matrix']['bin_sizes'], ",", "-r"),
         norms     = lambda wc:  fmtl(config['processes'][wc.proc]['parameters']['matrix']['norms'], ",", "-k"),
         assembly  = lambda wc:  config['processes'][wc.proc]['conditions'][wc.cond]['genome']['assembly']
-    conda:
-        "../envs/juicer_tools.yaml"
+    conda: "../envs/juicer_tools.yaml"
     benchmark: "benchmark/hic_br/{proc}/{cond}/{br}.tsv"
     log: "log/hic_br/{proc}/{cond}/{br}.log"
     shell:
@@ -101,6 +134,13 @@ rule hic_br:
                     &> {log}"""
 
 rule mcool_br:
+    """
+    Produce .cool file from downsampled single biological replicate .pairs files at highest resolution specified and
+    a fragment-scale resolution if specified. Then produces a .mcool file at all specified resolutions.
+    If restriction sites are provided, a per-fragments resolution will be included as well.
+
+    Note that this will only be produced if explicitly required by rule all.
+    """
     input:
         pairs = "results/{proc}/{cond}/{br}/{br}_downsample.pairs",
         chromsizes = lambda wc: config['processes'][wc.proc]['conditions'][wc.cond]['genome']['chromsizes'],

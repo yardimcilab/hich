@@ -13,3 +13,4 @@ Future features
 - Bisulfite-converted DNA alignment and methylation calling for methyl-HiC
 - Post-processing analysis (compartment, loop and TAD calling; promoter-enhancer interactions)
 - Config generation
+- Pseudo-bulking single-cell data

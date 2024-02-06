@@ -1,4 +1,8 @@
 rule merge_br:
+    """
+    Merge biological replicate .pairs files into a single condition .pairs and
+    produce output statistics for the conditions multiqc report
+    """
     input:
         pairs = lambda wc: expand("results/{proc}/{cond}/{br}/{br}_downsample.pairs", \
                         cond = wc.cond,
@@ -17,12 +21,23 @@ rule merge_br:
     shell: """pairtools merge --keep-first-header -o {output.pairs:q} {input.pairs:q} &>> {log}; pairtools stats --merge -o {output.stats:q} {input.stats:q};"""
 
 rule calculate_downsample_cd:
+    """
+    Compute the size to downsample each condition to. If the config.yaml process parameter 'downsample'
+    for the process being run is to_min_pairs_size, a group of .pairs files to compare must be
+    defined. Within that group, the size of each .pairs file is computed, and the ratio of
+    [smallest .pair]/[current .pair] is computed. The current .pair file will be downsampled by that
+    ratio.
+
+    Alternatively, all files can be downsampled to a constant ratio. To leave them unchanged, use '1'
+    or leave the downsample parameter unspecified.
+    """
     input:
         lambda wc: tree_expand("results/{proc}/{cond}/{cond}.pairs",
                                         config['processes'][wc.proc],
                                         [('conditions', 'cond'), ('bioreps', 'br')],
                                         proc = wc.proc)
     output: "results/{proc}/.markers/calculate_downsample_cd"
+    conda: "../envs/minimal_python.yaml"
     benchmark: "benchmark/calculate_downsample_br/{proc}.tsv"
     log: "log/calculate_downsample_br/{proc}.log"
     params:
@@ -31,6 +46,9 @@ rule calculate_downsample_cd:
     script: "../scripts/calculate_downsample.py"
 
 rule downsample_cd:
+    """
+    Downsample all conditions to sizes computed in calculate_downsample_cd
+    """
     input:
         pairs = "results/{proc}/{cond}/{cond}.pairs",
         fractions = "results/{proc}/.markers/calculate_downsample_cd"
@@ -41,6 +59,9 @@ rule downsample_cd:
     script: "../scripts/downsample.py"
 
 rule downsample_stats_cd:
+    """
+    Compute statistics on downsampled conditions for inclusion in multiqc report.
+    """
     input:
         pairs = "results/{proc}/{cond}/{cond}_downsample.pairs"
     output: "results/{proc}/reports/multiqc/conditions/{cond}_downsample_stats.txt"
@@ -50,6 +71,15 @@ rule downsample_stats_cd:
     shell: """pairtools stats -o {output} {input}"""
 
 rule hic_cd:
+    """
+    Produce .hic files from downsampled single condition .pairs files at specified resolutions.
+    If restriction sites are provided, a per-fragments resolution will be included as well.
+
+    Includes normalizations for juicer tools pre
+    https://github.com/aidenlab/juicer/wiki/Pre
+
+    Note that this will only be produced if explicitly required by rule all.
+    """
     input:
         pairs = "results/{proc}/{cond}/{cond}_downsample.pairs",
         re_sites = lambda wc: config['processes'][wc.proc]['conditions'][wc.cond]['genome']['restriction_sites']['juicer_tools'],
@@ -75,6 +105,13 @@ rule hic_cd:
                     &> {log}"""
 
 rule mcool_cd:
+    """
+    Produce .cool file from downsampled single condition .pairs files at highest resolution specified and
+    a fragment-scale resolution if specified. Then produces a .mcool file at all specified resolutions.
+    If restriction sites are provided, a per-fragments resolution will be included as well.
+
+    Note that this will only be produced if explicitly required by rule all.
+    """
     input:
         pairs = "results/{proc}/{cond}/{cond}_downsample.pairs",
         chromsizes = lambda wc: config['processes'][wc.proc]['conditions'][wc.cond]['genome']['chromsizes'],

@@ -1,0 +1,5 @@
+name: minimal_python
+channels:
+  - defaults
+dependencies:
+  - python=3.12
