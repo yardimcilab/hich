@@ -1,0 +1,3 @@
+name: fastqc_env
+dependencies:
+  - fastqc

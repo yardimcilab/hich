@@ -1,0 +1,80 @@
+data:
+  fastq: "fastq/"
+
+processes:
+  Jan24:
+    notes: "Jan 2024 EZH2 KO pipeline (Mock)"
+    parameters:
+      min_mapq:
+        align: "30"
+        parse: "30"
+      downsample:
+        to_min_pairs_size:
+          for_bioreps:
+            compare: within_conditions
+      matrix:
+        bin_sizes:
+          - "1000"
+          - "5000"
+          - "10000"
+          - "50000"
+          - "100000"
+          - "500000"
+          - "1000000"
+          - "5000000"
+        digest: True
+        norms:
+          - VC
+          - VC_SQRT
+          - KR
+          - SCALE
+    conditions:
+      Mock: 
+        notes:
+          description: "Mock CRISPR knockout"
+        genome:
+          index: "resources/index/bwamem2/hg38_noalts"
+          assembly: "hg38"
+          chromsizes: "resources/hg38_noalt.sizes"
+          restriction_sites:
+            juicer_tools: "resources/hg38_Arima.txt"
+            cooltools: "resources/hg38_Arima.bed"
+        bioreps:
+          br1:
+            techreps: 
+              - tr1
+              - tr2
+          br2:
+            techreps:
+              - tr1
+              - tr2
+          br3:
+            techreps: 
+              - tr1
+              - tr2
+      KO: 
+        notes:
+          description: "EZH2 CRISPR Knockout"
+        genome:
+          index: "resources/index/bwamem2/hg38_noalts"
+          assembly: "hg38"
+          chromsizes: "resources/hg38_noalt.sizes"
+          restriction_sites:
+            juicer_tools: "resources/hg38_Arima.txt"
+            cooltools: "resources/hg38_Arima.bed"
+        bioreps:
+          br1:
+            techreps: 
+              - tr1
+              - tr2
+          br2:
+            techreps:
+              - tr1
+              - tr2
+          br3:
+            techreps: 
+              - tr1
+              - tr2
+
+
+

@@ -1,0 +1,38 @@
+configfile: "config/config.yaml"
+include: "rules/techreps.smk"
+include: "rules/bioreps.smk"
+include: "rules/conditions.smk"
+include: "rules/common.smk"
+include: "rules/qc.smk"
+include: "rules/setup.smk"
+
+wildcard_constraints:
+    proc = constrain_to(config, ["processes"]),
+    cond = constrain_to(config, ["processes", "conditions"]),
+    br = constrain_to(config, ["processes", "conditions", "bioreps"]),
+    tr = constrain_to(config, ["processes", "conditions", "bioreps", "techreps"])
+
+rule all:
+    input:
+        tree_expand("results/{processes}/{conditions}/{bioreps}/{techreps}/{techreps}.{fmt}",
+                    config['processes']['Jan24'],
+                    ['conditions', 'bioreps', 'techreps'],
+                    processes = ['Jan24'],
+                    fmt = ["hic", "mcool"]) + 
+        tree_expand("results/{processes}/{conditions}/{bioreps}/{bioreps}.{fmt}",
+                    config['processes']['Jan24'],
+                    ['conditions', 'bioreps'],
+                    processes = ['Jan24'],
+                    fmt = ["hic", "mcool"]) + 
+        tree_expand("results/{processes}/{conditions}/{conditions}.{fmt}",
+                    config['processes']['Jan24'],
+                    ['conditions'],
+                    processes = ['Jan24'],
+                    fmt = ["hic", "mcool"]) +
+        tree_expand("results/{processes}/reports/fastqc/{conditions}_{bioreps}_{techreps}_{read}_fastqc.html",
+                    config['processes']['Jan24'],
+                    ['conditions', 'bioreps', 'techreps'],
+                    processes = ['Jan24'],
+                    read = ["1", "2"]) +
+        expand("results/Jan24/reports/multiqc/{type}/{type}_multiqc_report.html",
+            type=["techreps", "bioreps", "conditions"])
