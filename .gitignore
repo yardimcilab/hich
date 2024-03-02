@@ -1,0 +1,9 @@
+work
+results
+resources
+fastq
+.nextflow*
+.nextflow
+demo.csv
+matrix.csv
+

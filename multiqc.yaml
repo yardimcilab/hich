@@ -1,0 +1,9 @@
+name: multiqc
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - multiqc
+  - pip
+  - pip:
+    - git+https://github.com/open2c/MultiQC.git
